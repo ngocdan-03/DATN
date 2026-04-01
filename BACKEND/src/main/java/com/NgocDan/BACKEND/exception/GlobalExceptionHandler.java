@@ -57,7 +57,12 @@ public class GlobalExceptionHandler {
     // 4. Lỗi Validation cho DTO (@RequestBody @Valid)
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     ResponseEntity<ApiResponse<?>> handlingValidation(MethodArgumentNotValidException exception) {
-        String enumKey = Objects.requireNonNull(exception.getFieldError()).getDefaultMessage();
+        // 1. Kiểm tra Field Error trước, nếu không có thì lấy Global Error
+        var fieldError = exception.getFieldError();
+        var globalError = exception.getGlobalError();
+
+        String enumKey = (fieldError != null) ? fieldError.getDefaultMessage()
+                : (globalError != null ? globalError.getDefaultMessage() : "INVALID_INPUT");
 
         ErrorCode errorCode = ErrorCode.INVALID_INPUT;
         Map<String, Object> attributes = null;
@@ -65,13 +70,16 @@ public class GlobalExceptionHandler {
         try {
             errorCode = ErrorCode.valueOf(enumKey);
 
-            // Đoạn này dùng để lấy các thông số như min, max trong annotation
-            var constraintViolation = exception.getBindingResult()
-                    .getAllErrors().get(0).unwrap(jakarta.validation.ConstraintViolation.class);
+            // 2. Lấy attributes (min, max, message...) để map vào message động
+            // Chỗ này mình lấy error đầu tiên bất kể là field hay global
+            var error = exception.getBindingResult().getAllErrors().get(0);
+            var constraintViolation = error.unwrap(jakarta.validation.ConstraintViolation.class);
             attributes = constraintViolation.getConstraintDescriptor().getAttributes();
 
         } catch (IllegalArgumentException e) {
             log.error("Key lỗi Validation chưa được định nghĩa trong ErrorCode: {}", enumKey);
+        } catch (Exception e) {
+            log.warn("Không thể lấy attributes từ ConstraintViolation cho key: {}", enumKey);
         }
 
         return ResponseEntity.status(errorCode.getStatusCode())

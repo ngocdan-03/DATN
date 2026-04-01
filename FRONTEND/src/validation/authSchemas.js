@@ -14,7 +14,13 @@ export const loginSchema = yup.object({
 		.trim()
 		.required('Email là bắt buộc.')
 		.matches(EMAIL_REGEX, 'Email không đúng định dạng cho phép.'),
-	password: yup.string().required('Mật khẩu là bắt buộc.'),
+	password: yup
+		.string()
+		.required('Mật khẩu là bắt buộc.')
+		.matches(
+			STRONG_PASSWORD_REGEX,
+			'Mật khẩu phải có chữ hoa, chữ thường, số, ký tự đặc biệt và tối thiểu 8 ký tự.',
+		),
 });
 
 export const registerSchema = yup.object({

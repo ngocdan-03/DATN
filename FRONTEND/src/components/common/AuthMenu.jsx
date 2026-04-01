@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import defaultAvatar from '../../assets/default.png';
 import AppIcon from './AppIcon';
+import IconTextButton from './IconTextButton';
 import { createLogger } from '../../utils/logger';
 
 const logAuthMenu = createLogger('AuthMenu');
@@ -46,20 +47,24 @@ const AuthMenu = () => {
 		logAuthMenu('Render guest menu');
 		return (
 			<div className="flex items-center gap-3">
-				<Link
+				<IconTextButton
+					Component={Link}
 					to="/login"
 					className="inline-flex items-center gap-2 rounded-md border border-[#735c00] px-4 py-2 text-sm font-semibold text-[#735c00] transition-colors hover:bg-[#f5f3f4]"
+					iconName="login"
+					iconClassName="h-4 w-4"
 				>
-					<AppIcon name="login" className="h-4 w-4" />
 					Đăng nhập
-				</Link>
-				<Link
+				</IconTextButton>
+				<IconTextButton
+					Component={Link}
 					to="/register"
 					className="inline-flex items-center gap-2 rounded-md bg-[#735c00] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#5f4b00]"
+					iconName="userAdd"
+					iconClassName="h-4 w-4"
 				>
-					<AppIcon name="userAdd" className="h-4 w-4" />
 					Đăng ký
-				</Link>
+				</IconTextButton>
 			</div>
 		);
 	}
@@ -90,25 +95,30 @@ const AuthMenu = () => {
 						: 'invisible -translate-y-1 opacity-0 pointer-events-none'
 				}`}
 			>
-				<Link
+				<IconTextButton
+					Component={Link}
 					to="/dashboard"
 					className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-[#1b1c1d] transition-colors hover:bg-[#f5f3f4]"
+					iconName="dashboardGrid"
+					iconClassName="h-4 w-4 text-[#735c00]"
 					onClick={() => setOpen(false)}
 				>
-					<AppIcon name="dashboardGrid" className="h-4 w-4 text-[#735c00]" />
 					Bảng điều khiển
-				</Link>
-				<Link
+				</IconTextButton>
+				<IconTextButton
+					Component={Link}
 					to="/dang-tin"
 					className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-[#1b1c1d] transition-colors hover:bg-[#f5f3f4]"
+					iconName="plus"
+					iconClassName="h-4 w-4 text-[#735c00]"
 					onClick={() => setOpen(false)}
 				>
-					<AppIcon name="plus" className="h-4 w-4 text-[#735c00]" />
 					Đăng tin
-				</Link>
-				<button
-					type="button"
+				</IconTextButton>
+				<IconTextButton
 					className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-[#ba1a1a] transition-colors hover:bg-[#ffdad6]"
+					iconName="logout"
+					iconClassName="h-4 w-4"
 					onClick={async () => {
 						logAuthMenu('Logout clicked');
 						await logout();
@@ -116,9 +126,8 @@ const AuthMenu = () => {
 						setOpen(false);
 					}}
 				>
-					<AppIcon name="logout" className="h-4 w-4" />
 					Đăng xuất
-				</button>
+				</IconTextButton>
 			</div>
 		</div>
 	);

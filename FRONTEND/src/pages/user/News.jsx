@@ -3,6 +3,7 @@ import EditorialHeader from '../../components/user/news/EditorialHeader';
 import NewsGrid from '../../components/user/news/NewsGrid';
 import NewsPagination from '../../components/user/news/NewsPagination';
 import NewsToolbar from '../../components/user/news/NewsToolbar';
+import StateCard from '../../components/common/StateCard';
 import { getAllNews } from '../../services/newsService';
 import { createLogger } from '../../utils/logger';
 
@@ -114,7 +115,7 @@ const News = () => {
 				searching={loading}
 			/>
 
-			{error && <p className="mb-8 rounded-lg bg-[#ffdad6] px-4 py-3 text-sm text-[#ba1a1a]">{error}</p>}
+			{error && <StateCard variant="error" title="Không tải được tin tức" message={error} className="mb-8 p-4" />}
 
 			<NewsGrid items={items} loading={loading} />
 

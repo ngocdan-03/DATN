@@ -27,5 +27,5 @@ spring:
             required: true
 jwt:
   signerKey: ${JWT_SIGNER_KEY}
-  valid-duration: 20 #second
-  refresh-duration: 360 #second
+  valid-duration: 1800 #second 30 phut
+  refresh-duration: 604800 #second 1 tuan

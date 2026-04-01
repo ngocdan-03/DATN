@@ -1,4 +1,11 @@
-const LoginRequiredModal = ({ open, title = 'Yêu cầu đăng nhập', message, onClose, onConfirm }) => {
+const LoginRequiredModal = ({
+	open,
+	title = 'Yêu cầu đăng nhập',
+	message,
+	onClose,
+	onConfirm,
+	confirmLabel = 'Đăng nhập',
+}) => {
 	if (!open) return null;
 
 	return (
@@ -24,7 +31,7 @@ const LoginRequiredModal = ({ open, title = 'Yêu cầu đăng nhập', message,
 						onClick={onConfirm}
 						className="w-1/2 rounded-xl bg-gradient-to-r from-[#cca830] to-[#735c00] px-4 py-3 text-sm font-bold text-white transition-all hover:brightness-105"
 					>
-						Đăng nhập
+						{confirmLabel}
 					</button>
 				</div>
 			</div>

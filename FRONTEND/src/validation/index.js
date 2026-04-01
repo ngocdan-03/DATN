@@ -6,6 +6,7 @@ import {
 	otpCodeSchema,
 	forgotResetSchema,
 } from './authSchemas';
+import { createPostSchema } from './postSchemas';
 import {
 	EMAIL_REGEX,
 	FULL_NAME_REGEX,
@@ -21,6 +22,10 @@ export const authValidationSchemas = {
 	otpEmailSchema,
 	otpCodeSchema,
 	forgotResetSchema,
+};
+
+export const postValidationSchemas = {
+	createPostSchema,
 };
 
 export const authRegexPatterns = {

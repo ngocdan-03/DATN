@@ -31,7 +31,7 @@ public class NewsService {
     public PageResponse<NewsResponse> getAllNews(String keyword, NewsCategory category, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
 
-        log.info("Lọc tin tức với keyword: {} và category: {}", keyword, category);
+        log.info("loc tin tuc voi keyword: {} va category: {}", keyword, category);
 
         // Truyền thêm category vào hàm search
         Page<News> pageData = newsRepository.searchNewsCustom(keyword, category, NewsStatus.PUBLISHED, pageable);

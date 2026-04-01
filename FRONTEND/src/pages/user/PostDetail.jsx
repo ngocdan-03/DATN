@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import LoginRequiredModal from '../../components/common/modals/LoginRequiredModal';
 import StateCard from '../../components/common/StateCard';
 import BackLink from '../../components/user/news/detail/BackLink';
 import PostDescription from '../../components/user/post/detail/PostDescription';
@@ -11,6 +10,7 @@ import PostOverview from '../../components/user/post/detail/PostOverview';
 import PostOwnerCard from '../../components/user/post/detail/PostOwnerCard';
 import { LEGAL_STATUS_LABELS, LISTING_LABELS, PROPERTY_LABELS } from '../../constants/postFilters';
 import { getPostDetail, recordPostContact, togglePostFavorite } from '../../services/postService';
+import { emitAuthRequired } from '../../services/authUiEvents';
 import { createLogger } from '../../utils/logger';
 
 const logPostDetail = createLogger('PostDetail');
@@ -83,7 +83,6 @@ const getCurrentAccessToken = () => localStorage.getItem('accessToken') || '';
 // Trang chi tiet bai dang theo id URL /posts/:id.
 const PostDetail = () => {
 	const { id } = useParams();
-	const navigate = useNavigate();
 	const location = useLocation();
 	const { isAuthenticated } = useAuth();
 	const [post, setPost] = useState(null);
@@ -93,8 +92,6 @@ const PostDetail = () => {
 	const [isFavorite, setIsFavorite] = useState(false);
 	const [favoriteLoading, setFavoriteLoading] = useState(false);
 	const [favoriteError, setFavoriteError] = useState('');
-	const [showLoginRequiredModal, setShowLoginRequiredModal] = useState(false);
-	const [loginRequiredMessage, setLoginRequiredMessage] = useState('Bạn cần đăng nhập để tiếp tục thao tác này.');
 
 	useEffect(() => {
 		const fetchDetail = async () => {
@@ -177,8 +174,10 @@ const PostDetail = () => {
 			return token;
 		}
 
-		setLoginRequiredMessage(message || 'Bạn cần đăng nhập để tiếp tục thao tác này.');
-		setShowLoginRequiredModal(true);
+		emitAuthRequired({
+			message: message || 'Bạn cần đăng nhập để tiếp tục thao tác này.',
+			from: location.pathname,
+		});
 		return '';
 	};
 
@@ -313,21 +312,6 @@ const PostDetail = () => {
 				/>
 			</section>
 
-			<LoginRequiredModal
-				open={showLoginRequiredModal}
-				message={loginRequiredMessage}
-				onClose={() => setShowLoginRequiredModal(false)}
-				onConfirm={() => {
-					setShowLoginRequiredModal(false);
-					navigate('/login', {
-						replace: false,
-						state: {
-							message: 'Vui lòng đăng nhập để tiếp tục.',
-							from: location.pathname,
-						},
-					});
-				}}
-			/>
 		</main>
 	);
 };

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import AppIcon from "../components/common/AppIcon";
+import IconTextButton from "../components/common/IconTextButton";
 
 // Trang 404 cho cac duong dan khong ton tai.
 export default function NotFound() {
@@ -23,13 +23,14 @@ export default function NotFound() {
           <p className="mt-4 text-gray-600 max-w-md">
             Trang bạn tìm có thể đã bị xóa, đổi đường dẫn hoặc tạm thời không khả dụng.
           </p>
-          <button
+          <IconTextButton
             className="mt-8 inline-flex items-center bg-purple-700 hover:bg-purple-800 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-colors duration-300 uppercase"
             onClick={handleGoBack}
+            iconName="chevronLeft"
+            iconClassName="mr-3 h-5 w-5"
           >
-            <AppIcon name="chevronLeft" className="mr-3 h-5 w-5" />
             QUAY LẠI
-          </button>
+          </IconTextButton>
         </div>
         <div className="md:w-1/2 mt-10 md:mt-0 flex justify-center">
           <img

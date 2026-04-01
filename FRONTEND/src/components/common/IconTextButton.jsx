@@ -2,6 +2,7 @@ import AppIcon from './AppIcon';
 
 // Button dung chung cho pattern icon + text, giam lap class icon/button trong UI.
 const IconTextButton = ({
+	Component = 'button',
 	type = 'button',
 	onClick,
 	disabled,
@@ -13,10 +14,14 @@ const IconTextButton = ({
 	ariaLabel,
 	title,
 	after,
+	...rest
 }) => {
+	const componentProps = Component === 'button' ? { type } : {};
+
 	return (
-		<button
-			type={type}
+		<Component
+			{...componentProps}
+			{...rest}
 			onClick={onClick}
 			disabled={disabled}
 			className={className}
@@ -26,7 +31,7 @@ const IconTextButton = ({
 			{iconName && <AppIcon name={iconName} className={iconClassName} strokeWidth={iconStrokeWidth} />}
 			{children}
 			{after}
-		</button>
+		</Component>
 	);
 };
 

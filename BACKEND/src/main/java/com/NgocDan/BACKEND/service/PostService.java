@@ -109,7 +109,7 @@ public class PostService {
                         .build());
 
             } catch (NumberFormatException e) {
-                log.error("Lỗi định dạng UserId trong Token: {}", sub);
+                log.error("loi dinh dang userId trong token {}", sub);
             }
         }
         return response;
@@ -144,10 +144,10 @@ public class PostService {
         if(existing.isPresent()){
             // bỏ lưu
             userInteractionRepository.delete(existing.get());
-            log.info("user:{} đã bỏ lưu bài:{}", userId, postId);
+            log.info("user:{} da bo luu:{}", userId, postId);
         }else {
             saveNewInteraction(userId, postId, InteractionType.SAVE);
-            log.info("user:{} đã lưu bài:{}", userId, postId);
+            log.info("user:{} da luu bai:{}", userId, postId);
         }
     }
 
@@ -163,7 +163,7 @@ public class PostService {
         }
 
         saveNewInteraction(userId, postId, InteractionType.CONTACT);
-        log.info("user:{} đã liên hệ về bài:{}", userId, postId);
+        log.info("user:{} da lien he:{}", userId, postId);
     }
 
     // đăng tin
@@ -180,7 +180,7 @@ public class PostService {
 
         // 3. Kiểm tra Phường/Xã (Ward) từ request
         Ward ward = wardRepository.findById(request.getWardId())
-                .orElseThrow(() -> new AppException(ErrorCode.INVALID_INPUT));
+                .orElseThrow(() -> new AppException(ErrorCode.WARD_NOT_FOUND));
 
         // 4. Map dữ liệu từ DTO sang Entity Post (sử dụng Mapper cho sạch code)
         Post post = postMapper.toPost(request);
@@ -205,6 +205,6 @@ public class PostService {
         // 7. Lưu bài đăng vào Database
         postRepository.save(post);
 
-        log.info("User ID {} đã đăng tin thành công bài: {}", userId, post.getTitle());
+        log.info("User ID {} da dang tin thanh cong bai: {}", userId, post.getTitle());
     }
 }

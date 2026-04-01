@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { createLogger } from '../utils/logger';
+import { emitSessionExpired } from './authUiEvents';
 
 const REFRESH_ENDPOINT = 'http://localhost:8080/real-estate/auth/refresh';
 
@@ -13,7 +14,7 @@ const logApi = createLogger('ApiInterceptor');
 
 let isRefreshing = false;
 let pending401Queue = [];
-let isSessionExpiredAlertShown = false;
+let isSessionExpiredModalShown = false;
 
 const getRequestInfo = (requestConfig = {}) => ({
 	url: requestConfig.url,
@@ -39,11 +40,25 @@ const flushPendingQueue = (error, nextAccessToken) => {
 	pending401Queue = [];
 };
 
+const resolveSessionExpiredMessage = (messageFromBe) => {
+	const normalizedMessage = (messageFromBe || '').toLowerCase();
+	if (normalizedMessage.includes('chưa đăng nhập') || normalizedMessage.includes('not authenticated')) {
+		return 'Token không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại.';
+	}
+
+	return messageFromBe || 'Token không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại.';
+};
+
 const notifyExpiredSession = (messageFromBe) => {
-	if (typeof window === 'undefined' || isSessionExpiredAlertShown) return;
-	isSessionExpiredAlertShown = true;
-	window.alert(messageFromBe || 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
-	window.location.assign('/login');
+	if (typeof window === 'undefined' || isSessionExpiredModalShown) return;
+	isSessionExpiredModalShown = true;
+	emitSessionExpired({
+		message: resolveSessionExpiredMessage(messageFromBe),
+	});
+};
+
+export const markSessionExpiredModalHandled = () => {
+	isSessionExpiredModalShown = false;
 };
 
 const callRefreshToken = async () => {

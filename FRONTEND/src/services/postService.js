@@ -213,3 +213,48 @@ export const recordPostContact = async (postId, accessToken) => {
 		throw error;
 	}
 };
+
+// Tao bai dang moi; bat buoc co Bearer token va body theo PostCreateRequest.
+export const createPost = async (payload, accessToken) => {
+	const requestUrl = `${POST_BASE_URL}/create`;
+	const token = accessToken || localStorage.getItem('accessToken');
+
+	if (!token) {
+		const noTokenError = new Error('Thiếu accessToken cho thao tác đăng tin.');
+		noTokenError.code = 'NO_ACCESS_TOKEN';
+		throw noTokenError;
+	}
+
+	logPostService('Request createPost', {
+		requestUrl,
+		hasAccessToken: Boolean(token),
+		propertyType: payload?.propertyType,
+		listingType: payload?.listingType,
+		wardId: payload?.wardId,
+		galleryCount: Array.isArray(payload?.imageUrls) ? payload.imageUrls.length : 0,
+	});
+
+	try {
+		const response = await axios.post(requestUrl, payload, {
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		});
+
+		logPostService('Response createPost', {
+			httpStatus: response.status,
+			code: response.data?.code,
+			message: response.data?.message,
+		});
+		return response;
+	} catch (error) {
+		logPostService('Error createPost', {
+			httpStatus: error.response?.status,
+			code: error.response?.data?.code || error.code,
+			message: error.response?.data?.message || error.message,
+			requestUrl,
+			hasAccessToken: Boolean(token),
+		});
+		throw error;
+	}
+};
