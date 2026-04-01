@@ -2,12 +2,14 @@
 
 <p align="center">
   <b>Nền tảng giao dịch bất động sản thông minh ứng dụng AI</b><br/>
+  <br/>
+  <a href="https://www.oracle.com/java/"><img src="https://img.shields.io/badge/Java-21-orange?style=flat-square&logo=java" alt="Java"></a>
+  <a href="https://spring.io/projects/spring-boot/"><img src="https://img.shields.io/badge/Spring_Boot-3.4-brightgreen?style=flat-square&logo=springboot" alt="Spring Boot"></a>
+  <a href="https://reactjs.org/"><img src="https://img.shields.io/badge/React-18-blue?style=flat-square&logo=react" alt="React"></a>
+  <a href="https://www.mysql.com/"><img src="https://img.shields.io/badge/MySQL-8.0-blue?style=flat-square&logo=mysql" alt="MySQL"></a>
+  <br/><br/>
+  <b>RecoLand</b> là nền tảng thương mại điện tử chuyên biệt cho thị trường bất động sản tại Đà Nẵng. Dự án tập trung vào việc số hóa quy trình đăng tin, tối ưu bảo mật và cá nhân hóa trải nghiệm người dùng thông qua hệ thống gợi ý thông minh.
 </p>
-
-[![Java](https://img.shields.io/badge/Java-21-orange?style=flat-square&logo=java)](https://www.oracle.com/java/)
-[![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.4-brightgreen?style=flat-square&logo=springboot)](https://spring.io/projects/spring-boot)
-[![React](https://img.shields.io/badge/React-18-blue?style=flat-square&logo=react)](https://reactjs.org/)
-[![MySQL](https://img.shields.io/badge/MySQL-8.0-blue?style=flat-square&logo=mysql)](https://www.mysql.com/)
 
 ---
 
@@ -94,33 +96,47 @@ DATN/
 ├── AI_SERVICE/     # FastAPI Recommendation
 ├── References/     # Tài liệu & Database Design
 └── README.md
+```
+
+---
+
 ## 🚀 Hướng Dẫn Chạy Dự Án
 
 ### 1️⃣ Cấu hình Database
 
 ```sql
-CREATE DATABASE recoland_db;
+CREATE DATABASE real_estate_db;
+```
 
+---
 ### 2️⃣ cập nhật trong file 
 ```bash
 BACKEND/src/main/resources/application.yaml
+```
 
+---
 ### 3️⃣ Chạy Backend
 ```bash
 cd BACKEND
 ./mvnw spring-boot:run
+```
 
+---
 ### 4️⃣ Chạy Frontend
 ```bash
 cd FRONTEND
 npm install
 npm run dev
+```
 
+---
 ### 5️⃣ Chạy AI Service
 ```bash
 cd AI_SERVICE
 uvicorn main:app --reload
+```
 
+---
 ## 🎯 Điểm Nổi Bật Kỹ Thuật
 
 - Stateless Authentication với JWT
