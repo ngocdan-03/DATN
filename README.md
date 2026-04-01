@@ -2,15 +2,12 @@
 
 <p align="center">
   <b>Nền tảng giao dịch bất động sản thông minh ứng dụng AI</b><br/>
-  Graduation Thesis Project
 </p>
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=java"/>
-  <img src="https://img.shields.io/badge/Spring%20Boot-3.4-brightgreen?style=for-the-badge&logo=springboot"/>
-  <img src="https://img.shields.io/badge/React-18-blue?style=for-the-badge&logo=react"/>
-  <img src="https://img.shields.io/badge/MySQL-8.0-blue?style=for-the-badge&logo=mysql"/>
-</p>
+[![Java](https://img.shields.io/badge/Java-21-orange?style=flat-square&logo=java)](https://www.oracle.com/java/)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.4-brightgreen?style=flat-square&logo=springboot)](https://spring.io/projects/spring-boot)
+[![React](https://img.shields.io/badge/React-18-blue?style=flat-square&logo=react)](https://reactjs.org/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-blue?style=flat-square&logo=mysql)](https://www.mysql.com/)
 
 ---
 
@@ -97,3 +94,48 @@ DATN/
 ├── AI_SERVICE/     # FastAPI Recommendation
 ├── References/     # Tài liệu & Database Design
 └── README.md
+## 🚀 Hướng Dẫn Chạy Dự Án
+
+### 1️⃣ Cấu hình Database
+
+```sql
+CREATE DATABASE recoland_db;
+
+### 2️⃣ cập nhật trong file 
+```bash
+BACKEND/src/main/resources/application.yaml
+
+### 3️⃣ Chạy Backend
+```bash
+cd BACKEND
+./mvnw spring-boot:run
+
+### 4️⃣ Chạy Frontend
+```bash
+cd FRONTEND
+npm install
+npm run dev
+
+### 5️⃣ Chạy AI Service
+```bash
+cd AI_SERVICE
+uvicorn main:app --reload
+
+## 🎯 Điểm Nổi Bật Kỹ Thuật
+
+- Stateless Authentication với JWT
+- Refresh Token Rotation tăng cường bảo mật
+- Blacklist Access Token khi logout
+- Clean Architecture: Controller → Service → Repository
+- Sử dụng MapStruct tối ưu mapping DTO ↔ Entity
+- Axios Interceptor tự động refresh token (Frontend)
+- Tách AI Recommendation thành microservice (FastAPI)
+- Validation nghiệp vụ bằng Custom Annotation
+
+## 👨‍💻 Tác Giả
+
+- **Bùi Ngọc Dân**
+- 🎓 Đại học Bách Khoa – Đại học Đà Nẵng (DUT)
+- 💻 Chuyên ngành: Công nghệ thông tin
+- 📧 Email: buingocdan2003@gmail.com
+- 🔗 GitHub: https://github.com/ngocdan-03
