@@ -1,0 +1,16 @@
+# Java / Spring Boot
+target/
+*.class
+.mvn/
+.idea/
+*.iml
+
+# Node / ReactJS
+node_modules/
+build/
+.env
+dist/
+
+# System files
+.DS_Store
+Thumbs.db

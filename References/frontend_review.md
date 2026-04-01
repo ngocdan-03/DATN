@@ -1,0 +1,152 @@
+**I) vậy các kiến thức cần ôn là:**
+
+
+
+1: Axios để call api
+
+
+
+2: ôn các Hooks quan trọng: useState, useEffect, useContext, useNavigate
+
+
+
+3: react router để phân trang
+
+
+
+4: AuthContext để quản lý token xuyên suốt đồ án.
+
+
+
+**II) Cấu trúc thư mục:**
+
+
+
+1\. Thư mục components/ (Các thành phần UI)
+
+*Thay vì để tất cả component vào một chỗ, Dân nên chia theo mức độ tái sử dụng:*
+
+
+
+common/: Chứa các component dùng ở khắp mọi nơi (Button, Input, Loading Spinner, Modal).
+
+
+
+layout/: Chứa các thành phần cấu tạo nên Layout (Navbar, Sidebar, Footer).
+
+
+
+user/: Các component chỉ dành cho giao diện người dùng (Card bds, Filter thanh tìm kiếm).
+
+
+
+admin/: Các component chỉ dùng cho quản trị (Bảng dữ liệu Table, Biểu đồ Chart).
+
+
+
+**2. Thư mục layouts/ (Các khung giao diện)**
+
+*Mỗi vai trò người dùng thường có một khung nhìn khác nhau:*
+
+
+
+AuthLayout.jsx: Chỉ có Form giữa màn hình, dùng cho Login/Register.
+
+
+
+UserLayout.jsx: Có Navbar phía trên và Footer phía dưới, dùng cho người xem tin.
+
+
+
+AdminLayout.jsx: Có Sidebar cố định bên trái và Header chứa thông tin Admin.
+
+
+
+**3. Thư mục contexts/ (Quản lý trạng thái)**
+
+*Nơi chứa "Thẻ sinh viên" quyền lực mà chúng ta đã bàn:*
+
+
+
+AuthContext.jsx: Quản lý Token, thông tin User và hàm Login/Logout.
+
+
+
+ThemeContext.jsx: (Tùy chọn) Nếu Dân muốn làm chế độ Sáng/Tối cho web.
+
+
+
+**4. Thư mục routes/ (Điều hướng \& Bảo mật)**
+
+*Đây là "Cảnh sát giao thông" của ứng dụng:*
+
+
+
+AppRoutes.jsx: File tổng hợp tất cả các đường dẫn.
+
+
+
+ProtectedRoute.jsx: Component kiểm tra xem User đã Login chưa mới cho vào.
+
+
+
+AdminRoute.jsx: Component kiểm tra xem User có phải là ADMIN không mới cho vào vùng quản trị.
+
+
+
+**5. Thư mục services**
+
+*Đừng viết logic gọi API trực tiếp trong Component. Dân nên tách ra để dễ bảo trì:*
+
+
+
+api.js: Cấu hình Axios chung (BaseURL, Interceptors xử lý token 20s/40s).
+
+
+
+authService.js: Chứa các hàm login(), register(), logout().
+
+
+
+postService.js: Chứa các hàm getAllPosts(), getPostDetail(), createPost().
+
+
+
+userService.js: Các hàm liên quan đến quản lý tài khoản.
+
+
+
+**6. Thư mục pages**
+
+src/pages/
+
+├── auth/               # Các trang liên quan đến xác thực
+
+│   ├── Login.jsx
+
+│   └── Register.jsx
+
+├── user/               # Giao diện cho người dùng (Khách hàng)
+
+│   ├── Home.jsx        # Trang chủ liệt kê bất động sản
+
+│   ├── PostDetail.jsx  # Chi tiết bài đăng
+
+│   └── Profile.jsx     # Quản lý thông tin cá nhân
+
+├── admin/              # Giao diện cho quản trị viên (Admin)
+
+│   ├── Dashboard.jsx   # Thống kê hệ thống
+
+│   ├── ManagePosts.jsx # Duyệt bài, xóa bài
+
+│   └── ManageUsers.jsx # Quản lý tài khoản người dùng
+
+└── NotFound.jsx        # Trang lỗi 404
+
+
+
+**III) cách đặt tên:**
+
+Ví dụ: AuthContext.jsx, LoginForm.jsx, HomeLayout.jsx.
+

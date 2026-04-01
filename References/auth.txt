@@ -1,0 +1,22 @@
+AT: sub (User ID), role, iat, exp, jti (có thể có thêm)
+RT: sub, jti, familyId, fixed_exp
+
+RT in redis:
+KEY: RT:{jti_rt}
+value:
+{
+"userId": "102210155",
+"familyId": "fam_abc_123",
+"fixed_exp": 1711000000
+}
+ttl = fixed_exp - now.
+
+khi refresh dữ nguyên familyId và khi login mới radom uuid mới
+
+khi refresh nếu Jti RT gửi lên không có xóa cả họ familyId.
+
+logout:
+lấy jti của at và rt
+
+xóa rt theo jti đó
+đưa Jti của at vào blacklist nếu có hạn và ttl = exp - now.
