@@ -56,6 +56,8 @@ public enum ErrorCode {
     USER_NOT_VERIFIED(1012, "Tai khoan chua duoc xac thuc email", HttpStatus.FORBIDDEN),
     OTP_TOO_FREQUENT(1013, "Yeu cau OTP qua nhieu lan, vui long thu lai sau", HttpStatus.TOO_MANY_REQUESTS),
     INVALID_INPUT(1002, "Du lieu dau vao khong hop le", HttpStatus.BAD_REQUEST),
+    TRANSACTION_NOT_EXISTED(1003, "Giao dich khong ton tai", HttpStatus.NOT_FOUND),
+    INSUFFICIENT_BALANCE(1004, "So du khong du de thuc hien giao dich", HttpStatus.BAD_REQUEST),
 
     // 4xxx: Post & New Service
     NEWS_NOT_EXISTED(4001, "Tin tuc khong ton tai", HttpStatus.NOT_FOUND),

@@ -362,6 +362,7 @@ const Login = () => {
 						<FormFieldLabel iconName="mail" text="Email" />
 						<input
 							type="email"
+							autoComplete="username"
 							{...registerField('email')}
 							placeholder="name@recoland.com"
 							className="w-full rounded-lg border border-[#c4c6cd]/50 bg-white px-4 py-3 font-medium text-[#1b1c1d] placeholder:text-[#74777d]/55 focus:border-[#735c00] focus:ring-0"
@@ -373,6 +374,7 @@ const Login = () => {
 						<FormFieldLabel iconName="lock" text="Mật khẩu" />
 						<input
 							type="password"
+							autoComplete="current-password"
 							{...registerField('password')}
 							placeholder="Nhập mật khẩu"
 							className="w-full rounded-lg border border-[#c4c6cd]/50 bg-white px-4 py-3 font-medium text-[#1b1c1d] placeholder:text-[#74777d]/55 focus:border-[#735c00] focus:ring-0"

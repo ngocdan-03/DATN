@@ -8,6 +8,8 @@ import Sale from '../pages/user/Sale';
 import News from '../pages/user/News';
 import NewsDetail from '../pages/user/NewsDetail';
 import PostDetail from '../pages/user/PostDetail';
+import Payment from '../pages/user/Payment';
+import PaymentResult from '../pages/user/PaymentResult';
 import Login from '../pages/auth/Login';
 import Register from '../pages/auth/Register';
 import NotFound from '../pages/NotFound';
@@ -32,6 +34,15 @@ const AppRoutes = () => {
 				<Route path="/news" element={<News />} />
 				<Route path="/news/:id" element={<NewsDetail />} />
 				<Route path="/posts/:id" element={<PostDetail />} />
+				<Route path="/payment/result" element={<PaymentResult />} />
+				<Route
+					path="/payment"
+					element={
+						<ProtectedRoute>
+							<Payment />
+						</ProtectedRoute>
+					}
+				/>
 				<Route
 					path="/dashboard"
 					element={

@@ -46,7 +46,7 @@ public class User {
     LocalDate birthday;
     String address;
     @Builder.Default
-    String avatarUrl = "default.png";
+    String avatarUrl = "/assets/default.png";
 
     @Column(nullable = false)
     @Builder.Default

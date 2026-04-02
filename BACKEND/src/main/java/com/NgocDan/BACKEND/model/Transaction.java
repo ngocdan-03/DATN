@@ -51,8 +51,9 @@ public class Transaction {
     @Column(length = 100)
     String vnpTransactionNo;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
-    TransactionStatus status = TransactionStatus.SUCCESS;
+    TransactionStatus status = TransactionStatus.PENDING;
 
     @CreationTimestamp
     LocalDateTime createdAt;

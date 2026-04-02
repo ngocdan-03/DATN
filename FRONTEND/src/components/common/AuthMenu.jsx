@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import defaultAvatar from '../../assets/default.png';
 import AppIcon from './AppIcon';
 import IconTextButton from './IconTextButton';
 import { createLogger } from '../../utils/logger';
+import { resolveUserAvatarUrl } from '../../utils/avatar';
 
 const logAuthMenu = createLogger('AuthMenu');
 
@@ -41,7 +41,8 @@ const AuthMenu = () => {
 	}, []);
 
 	const displayName = user?.fullName || user?.email || 'Tài khoản';
-	const avatarUrl = user?.avatarUrl && user.avatarUrl !== 'default.png' ? user.avatarUrl : defaultAvatar;
+	const avatarUrl = resolveUserAvatarUrl(user?.avatarUrl || user?.avatar || 'default.png');
+	const fallbackAvatarUrl = resolveUserAvatarUrl('default.png');
 
 	if (!isAuthenticated || !user) {
 		logAuthMenu('Render guest menu');
@@ -83,6 +84,10 @@ const AuthMenu = () => {
 					alt={displayName}
 					className="h-10 w-10 rounded-full border-2 border-[#e9e7e9] object-cover"
 					src={avatarUrl}
+					onError={(event) => {
+						event.currentTarget.onerror = null;
+						event.currentTarget.src = fallbackAvatarUrl;
+					}}
 				/>
 				<span className="text-[#44474c]">▾</span>
 			</button>
@@ -104,6 +109,16 @@ const AuthMenu = () => {
 					onClick={() => setOpen(false)}
 				>
 					Bảng điều khiển
+				</IconTextButton>
+				<IconTextButton
+					Component={Link}
+					to="/payment"
+					className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-[#1b1c1d] transition-colors hover:bg-[#f5f3f4]"
+					iconName="currencyCard"
+					iconClassName="h-4 w-4 text-[#735c00]"
+					onClick={() => setOpen(false)}
+				>
+					Thanh toan VNPay
 				</IconTextButton>
 				<IconTextButton
 					Component={Link}

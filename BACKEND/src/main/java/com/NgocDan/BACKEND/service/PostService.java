@@ -30,11 +30,15 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PostService {
+    private final TransactionRepository transactionRepository;
     PostRepository postRepository;
     UserInteractionRepository userInteractionRepository;
     WardRepository wardRepository;
     UserRepository userRepository;
     PostMapper postMapper;
+
+    // chi phí đằn tin
+    BigDecimal POST_PRICE = new BigDecimal("23003");
 
     public PageResponse<PostResponse> getAllPosts(int page, int size) {
         // Phân trang đơn giản
@@ -171,12 +175,18 @@ public class PostService {
     public void createPost(PostCreateRequest request) {
         // 1. Lấy String ID từ SecurityContext (Token subject)
         String sub = SecurityContextHolder.getContext().getAuthentication().getName();
-
         // 2. Chuyển String ID sang Long và tìm User trong DB
-        // Tìm theo ID (Primary Key) sẽ nhanh hơn tìm theo Email rất nhiều
         Long userId = Long.parseLong(sub);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        // kiểm tra tài khoản có đủ tiền đăng tin không
+        if(user.getBalance().compareTo(POST_PRICE) < 0){
+            throw new AppException(ErrorCode.INSUFFICIENT_BALANCE);
+        }
+        // trừ tiền đăng tin
+        user.setBalance(user.getBalance().subtract(POST_PRICE));
+        userRepository.save(user);
 
         // 3. Kiểm tra Phường/Xã (Ward) từ request
         Ward ward = wardRepository.findById(request.getWardId())
@@ -203,8 +213,19 @@ public class PostService {
         }
 
         // 7. Lưu bài đăng vào Database
-        postRepository.save(post);
+        Post savePost = postRepository.save(post);
 
-        log.info("User ID {} da dang tin thanh cong bai: {}", userId, post.getTitle());
+        // ghi lại transaction đăng tin
+        Transaction transaction = Transaction.builder()
+                .user(user)
+                .post(savePost)
+                .amount(POST_PRICE)
+                .type(TransactionType.POST_FEE)
+                .description("Phí đăng tin cho bài: " + post.getTitle())
+                .status(TransactionStatus.SUCCESS)
+                .build();
+        transactionRepository.save(transaction);
+
+        log.info("User {} da bi tru {} VNĐ de dang tin: {}", user.getFullName(), POST_PRICE, savePost.getTitle());
     }
 }

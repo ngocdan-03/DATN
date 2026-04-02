@@ -25,6 +25,11 @@ spring:
           starttls:
             enable: true
             required: true
+vnpay:
+  tmn-code: "BOV605P5"
+  hash-secret: "YHICAK656C34WQDH1SEIFD9TY0G5EHAK"
+  url: "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html"
+  return-url: "http://localhost:8080/real-estate/payment/vnpay-callback"
 jwt:
   signerKey: ${JWT_SIGNER_KEY}
   valid-duration: 1800 #second 30 phut

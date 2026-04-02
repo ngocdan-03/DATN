@@ -33,7 +33,8 @@ public class SecurityConfig {
     private final String[] PUBLIC_ENDPOINTS_GUEST = {
         "/posts/all",  "/posts/search", "/posts/{id}",
         "/news/all", "/news/{id}",
-        "/hello" // Test hệ thống
+        "/hello",
+            "/payment/vnpay-callback", "/payment/vnpay-ipn"   // Test hệ thống
     };
 
     private final CustomJwtDecoder customJwtDecoder; // Khai báo decoder
@@ -46,6 +47,7 @@ public class SecurityConfig {
                 .permitAll() // Cho phép POST vào Auth
                 .requestMatchers(HttpMethod.GET, PUBLIC_ENDPOINTS_GUEST)
                 .permitAll() // Cho phép khách xem (GET)
+
                 .anyRequest()
                 .authenticated()); // Các yêu cầu khác phải có Token
 
