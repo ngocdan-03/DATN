@@ -46,6 +46,13 @@ public enum ErrorCode {
     WARD_NOT_FOUND(3026, "Phuong khong ton tai", HttpStatus.NOT_FOUND),
     TITLE_INVALID_SIZE(3027, "Tieu de phai tu 10 den 150 ky tu", HttpStatus.BAD_REQUEST),
     PRICE_TOO_LARGE(3028, "Gia phai nho hon 999999999999999", HttpStatus.BAD_REQUEST),
+    ADDRESS_TOO_LONG(3029, "Dia chi khong duoc qua 255 ky tu", HttpStatus.BAD_REQUEST),
+    GENDER_INVALID(3030, "Gioi tinh khong hop le", HttpStatus.BAD_REQUEST),
+    BIRTHDAY_INVALID(3031, "Ngay sinh khong hop le", HttpStatus.BAD_REQUEST),
+    INVALID_DATE_FORMAT(3032, "Ngay thang khong hop le, dung dinh dang dd-MM-yyyy", HttpStatus.BAD_REQUEST),
+    FORMAT_INVALID(3033, "Dinh dang du lieu khong hop le", HttpStatus.BAD_REQUEST),
+    PASSWORD_REQUIRED(3034, "Mat khau khong duoc de trong", HttpStatus.BAD_REQUEST),
+
     // 1xxx: loi nghiep vu
     USER_EXISTED(1006, "Email nay da duoc dang ky", HttpStatus.BAD_REQUEST),
     PHONE_EXISTED(1007, "So dien thoai nay da duoc su dung", HttpStatus.BAD_REQUEST),
@@ -58,6 +65,9 @@ public enum ErrorCode {
     INVALID_INPUT(1002, "Du lieu dau vao khong hop le", HttpStatus.BAD_REQUEST),
     TRANSACTION_NOT_EXISTED(1003, "Giao dich khong ton tai", HttpStatus.NOT_FOUND),
     INSUFFICIENT_BALANCE(1004, "So du khong du de thuc hien giao dich", HttpStatus.BAD_REQUEST),
+    OLD_PASSWORD_INCORRECT(1005, "Mat khau cu khong dung", HttpStatus.BAD_REQUEST),
+    NEW_PASSWORD_SAME_AS_OLD(1006, "Mat khau moi khong duoc giong mat khau cu", HttpStatus.BAD_REQUEST),
+    CONFIRM_PASSWORD_NOT_MATCH(1007, "Mat khau xac nhan khong khop", HttpStatus.BAD_REQUEST),
 
     // 4xxx: Post & New Service
     NEWS_NOT_EXISTED(4001, "Tin tuc khong ton tai", HttpStatus.NOT_FOUND),

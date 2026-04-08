@@ -61,7 +61,7 @@ public class User {
     LocalDateTime createdAt;
 
     @UpdateTimestamp
-    LocalDateTime updateAt; // Lưu ý: Tên cột trong DB của bạn đang là update_at
+    LocalDateTime updateAt;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

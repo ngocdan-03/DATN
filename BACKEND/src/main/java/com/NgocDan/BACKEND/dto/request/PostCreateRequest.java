@@ -6,6 +6,7 @@ import com.NgocDan.BACKEND.enums.PropertyType;
 import com.NgocDan.BACKEND.validator.EmailConstraint;
 import com.NgocDan.BACKEND.validator.PasswordConstraint;
 import com.NgocDan.BACKEND.validator.PropertyConstraint;
+import com.NgocDan.BACKEND.validator.UrlConstraint;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -36,10 +37,7 @@ public class PostCreateRequest {
     String streetAddress;
 
     @NotBlank(message = "THUMBNAIL_REQUIRED")
-    @Pattern(
-            regexp = "^(https?://.*|/.*|[a-zA-Z0-9._-]+\\.(jpg|jpeg|png|gif|webp))$",
-            message = "INVALID_URL_FORMAT"
-    )
+    @UrlConstraint
     String thumbnailUrl;
 
     @NotNull(message = "PRICE_REQUIRED")

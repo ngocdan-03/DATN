@@ -91,6 +91,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "WHERE ui_save.user.id = :userId " +
             "AND ui_save.interactionType = com.NgocDan.BACKEND.enums.InteractionType.SAVE " +
             "AND p.status = com.NgocDan.BACKEND.enums.PostStatus.APPROVED " +
+            "AND (:keyword IS NULL OR LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%'))) " + // Thêm dòng này
             "ORDER BY ui_save.createdAt DESC")
-    Page<PostDashboardResponse> findSavedPostsDashboardByUserId(@Param("userId") Long userId, Pageable pageable);
+    Page<PostDashboardResponse> findSavedPostsDashboardByUserId(
+            @Param("userId") Long userId,
+            @Param("keyword") String keyword,
+            Pageable pageable);
+
+
 }

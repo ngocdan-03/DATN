@@ -111,6 +111,29 @@ public class GlobalExceptionHandler {
                         .build());
     }
 
+    // 6. Lỗi format dữ liệu đầu vào (Ví dụ: JSON parse lỗi, LocalDate format sai...)
+    @ExceptionHandler(value = org.springframework.http.converter.HttpMessageNotReadableException.class)
+    ResponseEntity<ApiResponse<?>> handlingHttpMessageNotReadableException(
+            org.springframework.http.converter.HttpMessageNotReadableException exception) {
+
+        ErrorCode errorCode = ErrorCode.FORMAT_INVALID; // Mặc định
+
+        // Kiểm tra xem nguyên nhân có phải do Jackson không parse được format hay không
+        if (exception.getCause() instanceof com.fasterxml.jackson.databind.exc.InvalidFormatException invalidFormatEx) {
+
+            // Nếu đích đến là kiểu LocalDate, ta khẳng định là lỗi format ngày tháng
+            if (invalidFormatEx.getTargetType().equals(java.time.LocalDate.class)) {
+                errorCode = ErrorCode.INVALID_DATE_FORMAT;
+            }
+        }
+
+        return ResponseEntity.status(errorCode.getStatusCode())
+                .body(ApiResponse.builder()
+                        .code(errorCode.getCode())
+                        .message(errorCode.getMessage())
+                        .build());
+    }
+
     // Hàm bổ trợ để thay thế các placeholder như {min} trong message
     private String mapAttribute(String message, Map<String, Object> attributes) {
         String minValue = String.valueOf(attributes.get(MIN_ATTRIBUTE));

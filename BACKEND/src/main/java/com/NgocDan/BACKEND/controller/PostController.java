@@ -135,13 +135,14 @@ public class PostController {
     @GetMapping("/saved")
     @PreAuthorize("hasAuthority('READ_SAVED_POSTS')")
     public ApiResponse<PageResponse<PostDashboardResponse>> getSavedPosts(
+            @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "page", defaultValue = "1") int page,
-            @RequestParam(value = "size", defaultValue = "10") int size
+            @RequestParam(value = "size", defaultValue = "5") int size
     ) {
         return ApiResponse.<PageResponse<PostDashboardResponse>>builder()
                 .code(1000)
                 .message("Lấy danh sách bài đăng đã lưu thành công!")
-                .result(postService.getSavedPosts(page, size))
+                .result(postService.getSavedPosts(keyword, page, size))
                 .build();
     }
 }

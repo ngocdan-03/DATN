@@ -207,7 +207,7 @@ public class PostService {
         Ward ward = wardRepository.findById(request.getWardId())
                 .orElseThrow(() -> new AppException(ErrorCode.WARD_NOT_FOUND));
 
-        // 4. Map dữ liệu từ DTO sang Entity Post (sử dụng Mapper cho sạch code)
+        // 4. Map dữ liệu từ DTO sang Entity Post
         Post post = postMapper.toPost(request);
 
         // 5. Thiết lập các thông tin quan hệ và trạng thái
@@ -295,7 +295,7 @@ public class PostService {
     }
 
     // lấy bài đăng đã lưu
-    public PageResponse<PostDashboardResponse> getSavedPosts(int page, int size) {
+    public PageResponse<PostDashboardResponse> getSavedPosts(String keyword, int page, int size) {
         // 1. Lấy userId từ Token
         String sub = SecurityContextHolder.getContext().getAuthentication().getName();
         Long userId = Long.parseLong(sub);
@@ -303,10 +303,12 @@ public class PostService {
         // 2. Phân trang
         Pageable pageable = PageRequest.of(page - 1, size);
 
-        // 3. Gọi Repo (Dữ liệu đã là PostDashboardResponse)
-        Page<PostDashboardResponse> pageData = postRepository.findSavedPostsDashboardByUserId(userId, pageable);
+        String searchKeyword = (keyword != null && !keyword.trim().isEmpty()) ? keyword.trim() : null;
 
-        // 4. Trả về PageResponse chuẩn
+        // 3. Gọi Repo (Dữ liệu đã là PostDashboardResponse)
+        Page<PostDashboardResponse> pageData = postRepository.findSavedPostsDashboardByUserId(userId, searchKeyword, pageable);
+
+        // 4. Trả về PageResponse
         return PageResponse.<PostDashboardResponse>builder()
                 .currentPage(page)
                 .totalPages(pageData.getTotalPages())
