@@ -1,14 +1,14 @@
 import AppIcon from '../../common/AppIcon';
 
 // Cum dieu huong phan trang, moi lan doi trang se trigger goi API trang moi.
-const NewsPagination = ({ currentPage, totalPages, loading, onPrev, onNext }) => {
+const NewsPagination = ({ currentPage, totalPages, loading, onPrev, onNext, wrapperClassName = '' }) => {
 	const isFirstPage = currentPage <= 1;
 	const isLastPage = currentPage >= totalPages;
 	const arrowButtonClass =
 		'flex h-12 w-12 items-center justify-center rounded-full border border-[#041627] bg-[#041627] text-white transition-all duration-200 hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:border-[#c4c6cd] disabled:bg-[#f5f3f4] disabled:text-[#74777d] disabled:hover:scale-100';
 
 	return (
-		<footer className="mb-12 mt-24 flex flex-col items-center gap-6">
+		<footer className={`mb-12 mt-24 flex flex-col items-center gap-6 ${wrapperClassName}`.trim()}>
 			<div className="flex items-center gap-2">
 				<button
 					type="button"

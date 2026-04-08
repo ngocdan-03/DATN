@@ -16,7 +16,7 @@ const DetailArticle = ({ article }) => {
 			/>
 			<FeaturedImage thumbnailUrl={article?.thumbnailUrl} title={article?.title} />
 			<LeadSummary summary={article?.summary} />
-			<ArticleBody summary={article?.summary} />
+			<ArticleBody />
 			<SourceCTA sourceName={article?.sourceName} originalUrl={article?.originalUrl} />
 		</article>
 	);

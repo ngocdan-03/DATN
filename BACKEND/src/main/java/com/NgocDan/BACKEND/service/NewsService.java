@@ -44,6 +44,7 @@ public class NewsService {
                 .currentPage(page)
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
+                .pageSize(pageData.getSize())
                 .data(listNews)
                 .build();
     }

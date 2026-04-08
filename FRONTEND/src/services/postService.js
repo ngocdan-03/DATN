@@ -80,6 +80,66 @@ export const getAllPosts = async ({
 	}
 };
 
+// Lay danh sach bai dang cua chinh nguoi dung dang dang nhap.
+export const getMyPosts = async ({
+	keyword = '',
+	status = '',
+	page = 1,
+	size = 6,
+	accessToken,
+} = {}) => {
+	const requestUrl = `${POST_BASE_URL}/my-posts`;
+	const token = accessToken || localStorage.getItem('accessToken');
+
+	if (!token) {
+		const noTokenError = new Error('Thiếu accessToken để lấy danh sách tin của bạn.');
+		noTokenError.code = 'NO_ACCESS_TOKEN';
+		throw noTokenError;
+	}
+
+	const params = {
+		page,
+		size,
+		...(keyword ? { keyword } : {}),
+		...(status ? { status } : {}),
+	};
+
+	logPostService('Request getMyPosts', {
+		requestUrl,
+		params,
+		hasAccessToken: Boolean(token),
+	});
+
+	try {
+		const response = await axios.get(requestUrl, {
+			params,
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		});
+
+		logPostService('Response getMyPosts', {
+			httpStatus: response.status,
+			code: response.data?.code,
+			currentPage: response.data?.result?.currentPage,
+			totalPages: response.data?.result?.totalPages,
+			items: response.data?.result?.data?.length || 0,
+		});
+
+		return response;
+	} catch (error) {
+		logPostService('Error getMyPosts', {
+			httpStatus: error.response?.status,
+			code: error.response?.data?.code || error.code,
+			message: error.response?.data?.message || error.message,
+			requestUrl,
+			params,
+			hasAccessToken: Boolean(token),
+		});
+		throw error;
+	}
+};
+
 // Lay chi tiet bai dang theo id, tu dong kem Bearer token neu dang co dang nhap.
 export const getPostDetail = async (postId, accessToken) => {
 	const requestUrl = `${POST_BASE_URL}/${postId}`;

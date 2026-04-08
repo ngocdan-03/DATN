@@ -3,6 +3,21 @@ export const LISTING_LABELS = {
 	RENT: 'Thuê',
 };
 
+export const POST_STATUS_VALUES = ['PENDING', 'APPROVED', 'REJECTED'];
+
+export const POST_STATUS_LABELS = {
+	PENDING: 'Đang chờ duyệt',
+	APPROVED: 'Đã duyệt',
+	REJECTED: 'Bị từ chối',
+};
+
+export const POST_STATUS_OPTIONS = [
+	{ value: '', label: 'Tất cả trạng thái' },
+	{ value: 'PENDING', label: 'PENDING - Đang chờ duyệt' },
+	{ value: 'APPROVED', label: 'APPROVED - Đã duyệt' },
+	{ value: 'REJECTED', label: 'REJECTED - Bị từ chối' },
+];
+
 export const PROPERTY_LABELS = {
 	LAND: 'Đất',
 	HOUSE: 'Nhà',

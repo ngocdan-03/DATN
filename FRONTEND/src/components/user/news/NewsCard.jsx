@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import AppIcon from '../../common/AppIcon';
 
 const BACKEND_ORIGIN = 'http://localhost:8080';
@@ -48,12 +48,18 @@ const CATEGORY_LABELS = {
 
 // Card hien thi thong tin tung bai viet tin tuc.
 const NewsCard = ({ item }) => {
+	const location = useLocation();
 	const category = CATEGORY_LABELS[item?.category] || 'Tin tức';
 	const detailPath = `/news/${item?.id}`;
+	const fromPath = `${location.pathname}${location.search}`;
 
 	return (
 		<article className="group">
-			<Link to={detailPath} className="block relative mb-6 aspect-[4/3] overflow-hidden rounded-sm bg-[#f5f3f4]">
+			<Link
+				to={detailPath}
+				state={{ from: fromPath }}
+				className="block relative mb-6 aspect-[4/3] overflow-hidden rounded-sm bg-[#f5f3f4]"
+			>
 				<img
 					alt={item?.title || 'News thumbnail'}
 					className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
@@ -65,12 +71,11 @@ const NewsCard = ({ item }) => {
 			</Link>
 			<div className="px-2">
 				<h3 className="mb-3 text-xl leading-tight text-[#041627] transition-colors [font-family:Noto_Serif] group-hover:text-[#735c00]">
-					<Link to={detailPath} className="hover:underline decoration-[#735c00]/50 underline-offset-4">
+					<Link to={detailPath} state={{ from: fromPath }} className="hover:underline decoration-[#735c00]/50 underline-offset-4">
 						{item?.title}
 					</Link>
 				</h3>
-				<p className="mb-6 text-sm leading-relaxed text-[#44474c]">{item?.summary}</p>
-				<div className="flex items-center justify-between border-t border-[#c4c6cd]/10 pt-4">
+				<div className="mt-6 flex items-center justify-between border-t border-[#c4c6cd]/10 pt-4">
 					<span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase text-[#44474c]">
 						<AppIcon name="mail" className="h-3.5 w-3.5" />
 						{item?.sourceName || 'Tin tức RecoLand'}

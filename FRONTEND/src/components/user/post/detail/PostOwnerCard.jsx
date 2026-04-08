@@ -1,4 +1,5 @@
 import AppIcon from '../../../common/AppIcon';
+import { resolveUserAvatarUrl } from '../../../../utils/avatar';
 
 // The lien he nguoi dang voi thong tin co ban va CTA lien he.
 const PostOwnerCard = ({
@@ -11,11 +12,21 @@ const PostOwnerCard = ({
 	onContactEmail,
 	safeText,
 }) => {
+	const fallbackAvatarUrl = resolveUserAvatarUrl('default.png');
+
 	return (
 		<aside className="space-y-5" data-component="OwnerCard">
 			<section className="sticky top-6 rounded-3xl border border-[#e4e2e3] bg-white p-6 shadow-[0_22px_40px_-35px_rgba(4,22,39,0.45)]">
 				<div className="flex items-center gap-3">
-					<img alt="Avatar chủ đăng" className="h-20 w-20 rounded-2xl border border-[#e6e3dc] object-cover" src={ownerAvatar} />
+					<img
+						alt="Avatar chủ đăng"
+						className="h-20 w-20 rounded-2xl border border-[#e6e3dc] object-cover"
+						src={ownerAvatar}
+						onError={(event) => {
+							event.currentTarget.onerror = null;
+							event.currentTarget.src = fallbackAvatarUrl;
+						}}
+					/>
 					<div>
 						<p className="text-xs uppercase tracking-[0.16em] text-[#8b9098]">Người đăng</p>
 						<h4 className="mt-0.5 text-xl font-extrabold text-[#041627]">{safeText(owner?.fullName, 'Chưa có tên')}</h4>

@@ -12,7 +12,7 @@ import lombok.experimental.FieldDefaults;
 public class NewsResponse {
     Long id;
     String title;
-    String summary;
+//    String summary;
     String thumbnailUrl;
     String category;
     String sourceName;

@@ -10,10 +10,10 @@ import NewsDetail from '../pages/user/NewsDetail';
 import PostDetail from '../pages/user/PostDetail';
 import Payment from '../pages/user/Payment';
 import PaymentResult from '../pages/user/PaymentResult';
+import Dashboard from '../pages/user/Dashboard';
 import Login from '../pages/auth/Login';
 import Register from '../pages/auth/Register';
 import NotFound from '../pages/NotFound';
-import Dashboard from '../pages/admin/Dashboard';
 import PostCreate from '../pages/user/PostCreate';
 import ProtectedRoute from './ProtectedRoute';
 

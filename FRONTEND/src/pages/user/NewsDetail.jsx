@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import StateCard from '../../components/common/StateCard';
 import BackLink from '../../components/user/news/detail/BackLink';
 import DetailArticle from '../../components/user/news/detail/DetailArticle';
@@ -11,9 +11,11 @@ const logNewsDetail = createLogger('NewsDetail');
 // Trang chi tiet tin tuc theo id tu URL /news/:id.
 const NewsDetail = () => {
 	const { id } = useParams();
+	const location = useLocation();
 	const [article, setArticle] = useState(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState('');
+	const backTo = location.state?.from || '/news';
 
 	useEffect(() => {
 		const fetchDetail = async () => {
@@ -58,7 +60,7 @@ const NewsDetail = () => {
 
 	return (
 		<main className="mx-auto max-w-4xl px-6 pb-20 pt-12">
-			<BackLink />
+			<BackLink to={backTo} />
 
 			{loading && <StateCard message="Đang tải chi tiết tin tức..." />}
 

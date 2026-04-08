@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import HomeHeroSection from '../../components/user/home/HomeHeroSection';
 import HomePostGrid from '../../components/user/home/HomePostGrid';
-import HomeResultsSummary from '../../components/user/home/HomeResultsSummary';
 import HomeResultsToolbar from '../../components/user/home/HomeResultsToolbar';
 import NewsPagination from '../../components/user/news/NewsPagination';
 import { getAllPosts } from '../../services/postService';
@@ -79,18 +79,87 @@ const getWardIdFromOption = (optionValue) => {
 	return matched[1];
 };
 
+const HOME_FILTER_QUERY_KEYS = {
+	areaKeyword: 'areaKeyword',
+	propertyType: 'propertyType',
+	listingType: 'listingType',
+	priceRange: 'priceRange',
+	areaRange: 'areaRange',
+	legalStatus: 'legalStatus',
+	bedrooms: 'bedrooms',
+	bathrooms: 'bathrooms',
+};
+
+const normalizePage = (rawValue) => {
+	const parsed = Number(rawValue || '1');
+	if (!Number.isFinite(parsed) || parsed <= 0) return 1;
+	return parsed;
+};
+
+const getInitialFiltersFromSearchParams = (searchParams) => {
+	return {
+		...DEFAULT_POST_FILTERS,
+		areaKeyword: (searchParams.get(HOME_FILTER_QUERY_KEYS.areaKeyword) || '').trim(),
+		propertyType: searchParams.get(HOME_FILTER_QUERY_KEYS.propertyType) || '',
+		listingType: searchParams.get(HOME_FILTER_QUERY_KEYS.listingType) || '',
+		priceRange: searchParams.get(HOME_FILTER_QUERY_KEYS.priceRange) || '',
+		areaRange: searchParams.get(HOME_FILTER_QUERY_KEYS.areaRange) || '',
+		legalStatus: searchParams.get(HOME_FILTER_QUERY_KEYS.legalStatus) || '',
+		bedrooms: searchParams.get(HOME_FILTER_QUERY_KEYS.bedrooms) || '',
+		bathrooms: searchParams.get(HOME_FILTER_QUERY_KEYS.bathrooms) || '',
+	};
+};
+
 // Trang chu AllPostPage: lay danh sach bai dang va phan trang giong News.
 const Home = () => {
-	const [page, setPage] = useState(1);
+	const [searchParams, setSearchParams] = useSearchParams();
+	const initialPage = normalizePage(searchParams.get('page'));
+	const initialKeyword = (searchParams.get('keyword') || '').trim();
+	const initialFilters = getInitialFiltersFromSearchParams(searchParams);
+	const [page, setPage] = useState(initialPage);
 	const [items, setItems] = useState([]);
 	const [totalPages, setTotalPages] = useState(1);
-	const [totalElements, setTotalElements] = useState(0);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
-	const [searchInput, setSearchInput] = useState('');
-	const [appliedKeyword, setAppliedKeyword] = useState('');
-	const [draftFilters, setDraftFilters] = useState(DEFAULT_POST_FILTERS);
-	const [appliedFilters, setAppliedFilters] = useState(DEFAULT_POST_FILTERS);
+	const [searchInput, setSearchInput] = useState(initialKeyword);
+	const [appliedKeyword, setAppliedKeyword] = useState(initialKeyword);
+	const [draftFilters, setDraftFilters] = useState(initialFilters);
+	const [appliedFilters, setAppliedFilters] = useState(initialFilters);
+
+	const syncHomeQuery = useCallback((nextState) => {
+		const nextPage = normalizePage(nextState.page);
+		const nextKeyword = (nextState.keyword || '').trim();
+		const nextFilters = {
+			...DEFAULT_POST_FILTERS,
+			...(nextState.filters || {}),
+		};
+
+		setSearchParams((previousParams) => {
+			const nextParams = new URLSearchParams(previousParams);
+			if (nextPage <= 1) {
+				nextParams.delete('page');
+			} else {
+				nextParams.set('page', String(nextPage));
+			}
+
+			if (nextKeyword) {
+				nextParams.set('keyword', nextKeyword);
+			} else {
+				nextParams.delete('keyword');
+			}
+
+			Object.entries(HOME_FILTER_QUERY_KEYS).forEach(([field, queryKey]) => {
+				const value = String(nextFilters[field] || '').trim();
+				if (value) {
+					nextParams.set(queryKey, value);
+				} else {
+					nextParams.delete(queryKey);
+				}
+			});
+
+			return nextParams;
+		});
+	}, [setSearchParams]);
 
 	const queryParams = useMemo(() => {
 		const wardId = getWardIdFromOption(appliedFilters.areaKeyword);
@@ -120,20 +189,27 @@ const Home = () => {
 				const response = await getAllPosts({ page, size: POST_PAGE_SIZE, ...queryParams });
 				const result = response.data?.result || {};
 				const data = Array.isArray(result.data) ? result.data : [];
+				const currentPage = result.currentPage || page;
 
 				setItems(data);
 				setTotalPages(result.totalPages || 1);
-				setTotalElements(result.totalElements || data.length);
+				if (currentPage !== page) {
+					setPage(currentPage);
+					syncHomeQuery({
+						page: currentPage,
+						keyword: appliedKeyword,
+						filters: appliedFilters,
+					});
+				}
 
 				logHome('Fetch posts success', {
 					queryParams,
-					page: result.currentPage || page,
+					page: currentPage,
 					totalPages: result.totalPages || 1,
 					items: data.length,
 				});
 			} catch (fetchError) {
 				setItems([]);
-				setTotalElements(0);
 				setError(fetchError.response?.data?.message || 'Không thể tải danh sách bài đăng.');
 				logHome('Fetch posts failed', {
 					httpStatus: fetchError.response?.status,
@@ -147,22 +223,27 @@ const Home = () => {
 		};
 
 		fetchPosts();
-	}, [page, queryParams]);
+	}, [page, queryParams, appliedKeyword, appliedFilters, syncHomeQuery]);
 
 	const handlePrev = () => {
 		if (page <= 1 || loading) return;
-		setPage((prevPage) => prevPage - 1);
+		const nextPage = page - 1;
+		setPage(nextPage);
+		syncHomeQuery({ page: nextPage, keyword: appliedKeyword, filters: appliedFilters });
 	};
 
 	const handleNext = () => {
 		if (page >= totalPages || loading) return;
-		setPage((prevPage) => prevPage + 1);
+		const nextPage = page + 1;
+		setPage(nextPage);
+		syncHomeQuery({ page: nextPage, keyword: appliedKeyword, filters: appliedFilters });
 	};
 
 	const handleSearch = () => {
 		const normalizedKeyword = searchInput.trim();
 		setPage(1);
 		setAppliedKeyword(normalizedKeyword);
+		syncHomeQuery({ page: 1, keyword: normalizedKeyword, filters: appliedFilters });
 		logHome('Apply local search', { keyword: normalizedKeyword });
 	};
 
@@ -176,6 +257,7 @@ const Home = () => {
 	const handleApplyFilters = () => {
 		setPage(1);
 		setAppliedFilters(draftFilters);
+		syncHomeQuery({ page: 1, keyword: appliedKeyword, filters: draftFilters });
 		logHome('Apply backend filters', draftFilters);
 	};
 
@@ -185,6 +267,7 @@ const Home = () => {
 		setAppliedFilters(DEFAULT_POST_FILTERS);
 		setSearchInput('');
 		setAppliedKeyword('');
+		syncHomeQuery({ page: 1, keyword: '', filters: DEFAULT_POST_FILTERS });
 		logHome('Reset search and backend filters');
 	};
 
@@ -219,8 +302,6 @@ const Home = () => {
 			/>
 
 			<section className="mx-auto w-full max-w-7xl px-6 pb-20 md:px-10">
-				<HomeResultsSummary visibleCount={visibleItems.length} pageSize={POST_PAGE_SIZE} totalElements={totalElements} />
-
 				{error && <p className="mb-8 rounded-lg bg-[#ffdad6] px-4 py-3 text-sm text-[#ba1a1a]">{error}</p>}
 
 				<HomePostGrid

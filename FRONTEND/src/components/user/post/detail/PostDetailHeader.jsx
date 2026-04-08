@@ -9,12 +9,12 @@ const MetaTag = ({ label, iconName, className }) => (
 );
 
 // Header thong tin bai dang: quay lai, ngay dang, tieu de va nhom tag.
-const PostDetailHeader = ({ title, displayDate, listingTypeLabel, propertyTypeLabel, legalStatusLabel }) => {
+const PostDetailHeader = ({ title, displayDate, listingTypeLabel, propertyTypeLabel, legalStatusLabel, backTo = -1 }) => {
 	return (
 		<section className="mb-8" data-component="DetailHeader">
 			<div className="mb-3">
 				<BackLink
-					to={-1}
+					to={backTo}
 					withWrapper={false}
 					className="group inline-flex items-center gap-2 text-sm font-semibold text-[#44474c] transition-colors hover:text-[#041627]"
 				/>

@@ -4,6 +4,7 @@ import com.NgocDan.BACKEND.dto.request.PostCreateRequest;
 import com.NgocDan.BACKEND.dto.response.*;
 import com.NgocDan.BACKEND.enums.LegalStatus;
 import com.NgocDan.BACKEND.enums.ListingType;
+import com.NgocDan.BACKEND.enums.PostStatus;
 import com.NgocDan.BACKEND.enums.PropertyType;
 import com.NgocDan.BACKEND.service.NewsService;
 import com.NgocDan.BACKEND.service.PostService;
@@ -103,6 +104,44 @@ public class PostController {
         return ApiResponse.<Void>builder()
                 .code(1000)
                 .message("Dang tin thanh cong, vui long cho admin duyet!")
+                .build();
+    }
+
+    // get my posts
+    @GetMapping("/my-posts")
+    @PreAuthorize("hasAuthority('READ_MY_POSTS')")
+    public ApiResponse<PageResponse<PostDashboardResponse>> getMyPosts(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "status", required = false) PostStatus status,
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "size", defaultValue = "6") int size
+    ) {
+        return ApiResponse.<PageResponse<PostDashboardResponse>>builder()
+                .code(1000)
+                .message("Lấy danh sách bài viết của bạn thành công!")
+                .result(postService.getMyPosts(keyword, status, page, size))
+                .build();
+    }
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('DELETE_MY_POST')")
+    public ApiResponse<Void> deleteMyPost(@PathVariable Long id) {
+        postService.deleteMyPost(id);
+        return ApiResponse.<Void>builder()
+                .code(1000)
+                .message("Xóa bài viết thành công!")
+                .build();
+    }
+
+    @GetMapping("/saved")
+    @PreAuthorize("hasAuthority('READ_SAVED_POSTS')")
+    public ApiResponse<PageResponse<PostDashboardResponse>> getSavedPosts(
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size
+    ) {
+        return ApiResponse.<PageResponse<PostDashboardResponse>>builder()
+                .code(1000)
+                .message("Lấy danh sách bài đăng đã lưu thành công!")
+                .result(postService.getSavedPosts(page, size))
                 .build();
     }
 }

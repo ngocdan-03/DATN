@@ -9,5 +9,7 @@ public enum PostStatus {
     // Đã duyệt
     APPROVED,
     // tin đã xóa
-    DELETED
+    DELETED,
+    // tin bị từ chối
+    REJECTED
 }

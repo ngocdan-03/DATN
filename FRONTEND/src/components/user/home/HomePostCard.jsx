@@ -1,9 +1,12 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import AppIcon from '../../common/AppIcon';
 import { LISTING_LABELS, PROPERTY_LABELS } from '../../../constants/postFilters';
 
 // Card hien thi thong tin mot bai dang bat dong san.
 const HomePostCard = ({ item, resolveThumbnailUrl, formatPrice, formatArea }) => {
+	const location = useLocation();
+	const fromPath = `${location.pathname}${location.search}`;
+
 	return (
 		<article className="group overflow-hidden rounded-2xl border border-[#e6e4e6] bg-white p-3 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#d1bf8a] hover:shadow-xl">
 			<div className="relative mb-4 aspect-[4/3] overflow-hidden rounded-xl bg-[#f5f3f4]">
@@ -54,6 +57,7 @@ const HomePostCard = ({ item, resolveThumbnailUrl, formatPrice, formatArea }) =>
 					</span>
 					<Link
 						to={`/posts/${item.id}`}
+						state={{ from: fromPath }}
 						className="inline-flex items-center gap-1 rounded-lg bg-[#f5f3f4] px-3 py-2 text-xs font-bold uppercase tracking-wider text-[#041627] transition-colors hover:bg-[#041627] hover:text-white"
 					>
 						Xem chi tiết

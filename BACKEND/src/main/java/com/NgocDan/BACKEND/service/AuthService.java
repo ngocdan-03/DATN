@@ -69,7 +69,7 @@ public class AuthService {
                 .roles(new HashSet<>(java.util.List.of(role)))
                 .build();
         userRepository.save(user);
-        sendOtp(user.getEmail(), "verify");
+//        sendOtp(user.getEmail(), "verify");
     }
 
     // 2. Đăng nhập

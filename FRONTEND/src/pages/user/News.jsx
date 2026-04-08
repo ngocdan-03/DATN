@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import EditorialHeader from '../../components/user/news/EditorialHeader';
 import NewsGrid from '../../components/user/news/NewsGrid';
 import NewsPagination from '../../components/user/news/NewsPagination';
@@ -10,17 +11,58 @@ import { createLogger } from '../../utils/logger';
 const NEWS_PAGE_SIZE = 6;
 const logNewsPage = createLogger('News');
 
+const normalizePage = (rawValue) => {
+	const parsed = Number(rawValue || '1');
+	if (!Number.isFinite(parsed) || parsed <= 0) return 1;
+	return parsed;
+};
+
+const normalizeCategory = (rawValue) => (rawValue || '').trim().toUpperCase();
+
 // Trang News: goi API theo page, xu ly tim kiem/sap xep va render cac component con.
 const News = () => {
-	const [page, setPage] = useState(1);
-	const [keywordInput, setKeywordInput] = useState('');
-	const [categoryInput, setCategoryInput] = useState('');
-	const [searchKeyword, setSearchKeyword] = useState('');
-	const [searchCategory, setSearchCategory] = useState('');
+	const [searchParams, setSearchParams] = useSearchParams();
+	const initialPage = normalizePage(searchParams.get('page'));
+	const initialKeyword = (searchParams.get('keyword') || '').trim();
+	const initialCategory = normalizeCategory(searchParams.get('category'));
+	const [page, setPage] = useState(initialPage);
+	const [keywordInput, setKeywordInput] = useState(initialKeyword);
+	const [categoryInput, setCategoryInput] = useState(initialCategory);
+	const [searchKeyword, setSearchKeyword] = useState(initialKeyword);
+	const [searchCategory, setSearchCategory] = useState(initialCategory);
 	const [items, setItems] = useState([]);
 	const [totalPages, setTotalPages] = useState(1);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
+
+	const syncNewsQuery = useCallback((nextState) => {
+		const nextPage = normalizePage(nextState.page);
+		const nextKeyword = (nextState.keyword || '').trim();
+		const nextCategory = normalizeCategory(nextState.category);
+
+		setSearchParams((previousParams) => {
+			const nextParams = new URLSearchParams(previousParams);
+			if (nextPage <= 1) {
+				nextParams.delete('page');
+			} else {
+				nextParams.set('page', String(nextPage));
+			}
+
+			if (nextKeyword) {
+				nextParams.set('keyword', nextKeyword);
+			} else {
+				nextParams.delete('keyword');
+			}
+
+			if (nextCategory) {
+				nextParams.set('category', nextCategory);
+			} else {
+				nextParams.delete('category');
+			}
+
+			return nextParams;
+		});
+	}, [setSearchParams]);
 
 	useEffect(() => {
 		const fetchNews = async () => {
@@ -42,14 +84,23 @@ const News = () => {
 				});
 				const result = response.data?.result || {};
 				const data = Array.isArray(result.data) ? result.data : [];
+				const currentPage = result.currentPage || page;
 
 				setItems(data);
 				setTotalPages(result.totalPages || 1);
+				if (currentPage !== page) {
+					setPage(currentPage);
+					syncNewsQuery({
+						page: currentPage,
+						keyword: searchKeyword,
+						category: searchCategory,
+					});
+				}
 
 				logNewsPage('Fetch page success', {
 					keyword: searchKeyword,
 					category: searchCategory,
-					page: result.currentPage || page,
+					page: currentPage,
 					totalPages: result.totalPages || 1,
 					items: data.length,
 				});
@@ -69,23 +120,25 @@ const News = () => {
 		};
 
 		fetchNews();
-	}, [page, searchKeyword, searchCategory]);
+	}, [page, searchKeyword, searchCategory, syncNewsQuery]);
 
 	const handleSearch = () => {
 		const normalizedKeyword = keywordInput.trim();
-		const normalizedCategory = categoryInput.trim().toUpperCase();
+		const normalizedCategory = normalizeCategory(categoryInput);
 		logNewsPage('Trigger search', { keyword: normalizedKeyword, category: normalizedCategory });
 		setPage(1);
 		setSearchKeyword(normalizedKeyword);
 		setSearchCategory(normalizedCategory);
+		syncNewsQuery({ page: 1, keyword: normalizedKeyword, category: normalizedCategory });
 	};
 
 	const handleCategoryChange = (value) => {
-		const normalizedCategory = value.trim().toUpperCase();
+		const normalizedCategory = normalizeCategory(value);
 		logNewsPage('Category changed', { category: normalizedCategory });
 		setCategoryInput(normalizedCategory);
 		setPage(1);
 		setSearchCategory(normalizedCategory);
+		syncNewsQuery({ page: 1, keyword: searchKeyword, category: normalizedCategory });
 	};
 
 	const handlePrev = () => {
@@ -93,6 +146,7 @@ const News = () => {
 		const nextPage = page - 1;
 		logNewsPage('Go to previous page', { from: page, to: nextPage });
 		setPage(nextPage);
+		syncNewsQuery({ page: nextPage, keyword: searchKeyword, category: searchCategory });
 	};
 
 	const handleNext = () => {
@@ -100,6 +154,7 @@ const News = () => {
 		const nextPage = page + 1;
 		logNewsPage('Go to next page', { from: page, to: nextPage });
 		setPage(nextPage);
+		syncNewsQuery({ page: nextPage, keyword: searchKeyword, category: searchCategory });
 	};
 
 	return (

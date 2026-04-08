@@ -55,6 +55,7 @@ const resolveAssetUrl = (url, fallback = FALLBACK_IMAGE) => {
 
 	const fileName = getFileNameFromPath(url);
 	if (fileName && LOCAL_IMAGE_BY_NAME[fileName]) return LOCAL_IMAGE_BY_NAME[fileName];
+	if (url.startsWith('/assets/')) return url;
 	if (url.startsWith('/')) return `${BACKEND_ORIGIN}${url}`;
 	return fallback;
 };
@@ -84,6 +85,7 @@ const getCurrentAccessToken = () => localStorage.getItem('accessToken') || '';
 const PostDetail = () => {
 	const { id } = useParams();
 	const location = useLocation();
+	const backTo = location.state?.from || -1;
 	const { isAuthenticated } = useAuth();
 	const [post, setPost] = useState(null);
 	const [loading, setLoading] = useState(true);
@@ -277,6 +279,7 @@ const PostDetail = () => {
 	return (
 		<main className="mx-auto w-full max-w-7xl px-6 pb-16 pt-10 md:px-10" data-component="DetailPostPage">
 			<PostDetailHeader
+				backTo={backTo}
 				title={safeText(post.title, 'Chi tiết bất động sản')}
 				displayDate={safeText(post.displayDate, '--/--/----')}
 				listingTypeLabel={listingTypeLabel}
