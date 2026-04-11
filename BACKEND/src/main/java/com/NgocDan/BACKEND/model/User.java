@@ -43,10 +43,12 @@ public class User {
 
     @Builder.Default
     Integer gender = 0;
+
     LocalDate birthday;
     String address;
+
     @Builder.Default
-    String avatarUrl = "/assets/default.png";
+    String avatarUrl = "https://res.cloudinary.com/diu2nczm5/image/upload/v1775835527/default.jpg";
 
     @Column(nullable = false)
     @Builder.Default
@@ -54,6 +56,7 @@ public class User {
 
     @Builder.Default
     Boolean isVerified = false;
+
     @Builder.Default
     Boolean isLocked = false;
 

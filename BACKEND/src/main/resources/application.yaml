@@ -25,9 +25,18 @@ spring:
           starttls:
             enable: true
             required: true
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 5MB        # Giới hạn 5MB cho 1 file ảnh
+      max-request-size: 20MB    # Giới hạn 20MB cho tổng 1 lần đăng tin (nhiều ảnh)
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME}
+  api-key: ${CLOUDINARY_API_KEY}
+  api-secret: ${CLOUDINARY_SECRET}
 vnpay:
-  tmn-code: "BOV605P5"
-  hash-secret: "YHICAK656C34WQDH1SEIFD9TY0G5EHAK"
+  tmn-code: ${VNPAY_TMN_CODE}
+  hash-secret: ${VNPAY_HASH_SECRET}
   url: "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html"
   return-url: "http://localhost:8080/real-estate/payment/vnpay-callback"
 jwt:

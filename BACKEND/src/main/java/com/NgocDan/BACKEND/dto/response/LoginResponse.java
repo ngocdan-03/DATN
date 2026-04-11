@@ -3,8 +3,6 @@ package com.NgocDan.BACKEND.dto.response;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -1,13 +1,15 @@
 package com.NgocDan.BACKEND.service.redis;
 
-import com.NgocDan.BACKEND.model.redis.OtpEmail;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
+import java.time.Duration;
+
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
+import com.NgocDan.BACKEND.model.redis.OtpEmail;
+
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 @Service
 @RequiredArgsConstructor

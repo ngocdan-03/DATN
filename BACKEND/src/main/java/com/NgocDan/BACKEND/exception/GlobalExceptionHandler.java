@@ -10,6 +10,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import com.NgocDan.BACKEND.dto.response.ApiResponse;
 
@@ -61,7 +62,8 @@ public class GlobalExceptionHandler {
         var fieldError = exception.getFieldError();
         var globalError = exception.getGlobalError();
 
-        String enumKey = (fieldError != null) ? fieldError.getDefaultMessage()
+        String enumKey = (fieldError != null)
+                ? fieldError.getDefaultMessage()
                 : (globalError != null ? globalError.getDefaultMessage() : "INVALID_INPUT");
 
         ErrorCode errorCode = ErrorCode.INVALID_INPUT;
@@ -85,9 +87,10 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(errorCode.getStatusCode())
                 .body(ApiResponse.builder()
                         .code(errorCode.getCode())
-                        .message(Objects.nonNull(attributes)
-                                ? mapAttribute(errorCode.getMessage(), attributes)
-                                : errorCode.getMessage())
+                        .message(
+                                Objects.nonNull(attributes)
+                                        ? mapAttribute(errorCode.getMessage(), attributes)
+                                        : errorCode.getMessage())
                         .build());
     }
 
@@ -129,6 +132,17 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(errorCode.getStatusCode())
                 .body(ApiResponse.builder()
+                        .code(errorCode.getCode())
+                        .message(errorCode.getMessage())
+                        .build());
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMaxSizeException(MaxUploadSizeExceededException exc) {
+        ErrorCode errorCode = ErrorCode.UPLOAD_SIZE_EXCEEDED;
+
+        return ResponseEntity.status(errorCode.getStatusCode())
+                .body(ApiResponse.<Void>builder()
                         .code(errorCode.getCode())
                         .message(errorCode.getMessage())
                         .build());

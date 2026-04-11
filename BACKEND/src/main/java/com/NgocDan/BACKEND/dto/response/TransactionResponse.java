@@ -1,11 +1,11 @@
 package com.NgocDan.BACKEND.dto.response;
 
-import com.NgocDan.BACKEND.enums.TransactionStatus;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-
 import java.math.BigDecimal;
 
+import com.NgocDan.BACKEND.enums.TransactionStatus;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Data
 @NoArgsConstructor
@@ -19,5 +19,5 @@ public class TransactionResponse {
     String transactionDate;
     TransactionStatus status;
 
-    boolean isPost ;
+    boolean isPost;
 }

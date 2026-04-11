@@ -14,5 +14,4 @@ public class RefreshToken {
     String userId;
 
     String familyId;
-
 }

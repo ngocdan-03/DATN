@@ -1,14 +1,15 @@
 package com.NgocDan.BACKEND.mapper;
 
-import com.NgocDan.BACKEND.dto.response.TransactionDetailResponse;
-import com.NgocDan.BACKEND.dto.response.TransactionResponse;
-import com.NgocDan.BACKEND.model.Transaction;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import com.NgocDan.BACKEND.dto.response.TransactionDetailResponse;
+import com.NgocDan.BACKEND.dto.response.TransactionResponse;
+import com.NgocDan.BACKEND.model.Transaction;
 
 @Mapper(componentModel = "spring")
 public interface TransactionMapper {
@@ -28,13 +29,13 @@ public interface TransactionMapper {
     TransactionDetailResponse toDetailResponse(Transaction transaction);
 
     @Named("formatDate")
-    default String formatDate(LocalDateTime createdAt){
-        if(createdAt == null) return null;
+    default String formatDate(LocalDateTime createdAt) {
+        if (createdAt == null) return null;
         return createdAt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
     }
 
     @Named(("checkIsPost"))
-    default boolean checkIsPost(Object post){
+    default boolean checkIsPost(Object post) {
         return post != null;
     }
 
@@ -43,5 +44,4 @@ public interface TransactionMapper {
         if (id == null) return null;
         return "INV-" + String.format("%06d", id); // Tạo mã dạng INV-000102
     }
-
 }

@@ -1,21 +1,23 @@
 package com.NgocDan.BACKEND.controller;
 
+import java.math.BigDecimal;
+
+import jakarta.validation.Valid;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
 import com.NgocDan.BACKEND.dto.request.PostCreateRequest;
 import com.NgocDan.BACKEND.dto.response.*;
 import com.NgocDan.BACKEND.enums.LegalStatus;
 import com.NgocDan.BACKEND.enums.ListingType;
 import com.NgocDan.BACKEND.enums.PostStatus;
 import com.NgocDan.BACKEND.enums.PropertyType;
-import com.NgocDan.BACKEND.service.NewsService;
 import com.NgocDan.BACKEND.service.PostService;
-import jakarta.validation.Valid;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-
-import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/posts")
@@ -27,8 +29,7 @@ public class PostController {
     @GetMapping("/all")
     public ApiResponse<PageResponse<PostResponse>> getAll(
             @RequestParam(value = "page", defaultValue = "1") int page,
-            @RequestParam(value = "size", defaultValue = "6") int size
-    ) {
+            @RequestParam(value = "size", defaultValue = "6") int size) {
         return ApiResponse.<PageResponse<PostResponse>>builder()
                 .code(1000)
                 .message("Lấy danh sách bài viết thành công!")
@@ -51,12 +52,22 @@ public class PostController {
             @RequestParam(required = false) Integer minBedrooms,
             @RequestParam(required = false) Integer minBathrooms,
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "6") int size
-    ) {
+            @RequestParam(defaultValue = "6") int size) {
         return ApiResponse.<PageResponse<PostResponse>>builder()
-                .result(postService.getFilteredPosts(keyword, wardId, propertyType,
-                        listingType, legalStatus, minPrice, maxPrice,
-                        minArea, maxArea, minBedrooms, minBathrooms, page, size))
+                .result(postService.getFilteredPosts(
+                        keyword,
+                        wardId,
+                        propertyType,
+                        listingType,
+                        legalStatus,
+                        minPrice,
+                        maxPrice,
+                        minArea,
+                        maxArea,
+                        minBedrooms,
+                        minBathrooms,
+                        page,
+                        size))
                 .build();
     }
 
@@ -73,9 +84,9 @@ public class PostController {
     // lưu
     @PostMapping("/{id}/favorite")
     @PreAuthorize("hasAuthority('SAVE_POST')")
-    public ApiResponse<Void> toggleFavorite(@PathVariable Long id){
+    public ApiResponse<Void> toggleFavorite(@PathVariable Long id) {
         postService.toggleFavorite(id);
-        return ApiResponse .<Void>builder()
+        return ApiResponse.<Void>builder()
                 .code(1000)
                 .message("Cập nhật trạng thái yêu thích thành công!")
                 .build();
@@ -114,14 +125,14 @@ public class PostController {
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "status", required = false) PostStatus status,
             @RequestParam(value = "page", defaultValue = "1") int page,
-            @RequestParam(value = "size", defaultValue = "6") int size
-    ) {
+            @RequestParam(value = "size", defaultValue = "6") int size) {
         return ApiResponse.<PageResponse<PostDashboardResponse>>builder()
                 .code(1000)
                 .message("Lấy danh sách bài viết của bạn thành công!")
                 .result(postService.getMyPosts(keyword, status, page, size))
                 .build();
     }
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('DELETE_MY_POST')")
     public ApiResponse<Void> deleteMyPost(@PathVariable Long id) {
@@ -137,8 +148,7 @@ public class PostController {
     public ApiResponse<PageResponse<PostDashboardResponse>> getSavedPosts(
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "page", defaultValue = "1") int page,
-            @RequestParam(value = "size", defaultValue = "5") int size
-    ) {
+            @RequestParam(value = "size", defaultValue = "5") int size) {
         return ApiResponse.<PageResponse<PostDashboardResponse>>builder()
                 .code(1000)
                 .message("Lấy danh sách bài đăng đã lưu thành công!")

@@ -1,15 +1,17 @@
 package com.NgocDan.BACKEND.controller;
 
+import org.springframework.web.bind.annotation.*;
+
 import com.NgocDan.BACKEND.dto.response.ApiResponse;
 import com.NgocDan.BACKEND.dto.response.NewsDetailResponse;
 import com.NgocDan.BACKEND.dto.response.NewsResponse;
 import com.NgocDan.BACKEND.dto.response.PageResponse;
 import com.NgocDan.BACKEND.enums.NewsCategory;
 import com.NgocDan.BACKEND.service.NewsService;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/news")
@@ -23,8 +25,7 @@ public class NewsController {
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "category", required = false) NewsCategory category, // Thêm dòng này
             @RequestParam(value = "page", defaultValue = "1") int page,
-            @RequestParam(value = "size", defaultValue = "9") int size
-    ) {
+            @RequestParam(value = "size", defaultValue = "9") int size) {
         return ApiResponse.<PageResponse<NewsResponse>>builder()
                 .code(1000)
                 .result(newsService.getAllNews(keyword, category, page, size))

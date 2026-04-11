@@ -2,8 +2,6 @@ package com.NgocDan.BACKEND.configuration;
 
 import javax.crypto.spec.SecretKeySpec;
 
-import com.NgocDan.BACKEND.repository.UserRepository;
-import com.NgocDan.BACKEND.service.redis.InvalidatedTokenRedisService; // Import service mới
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -11,6 +9,9 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.stereotype.Component;
+
+import com.NgocDan.BACKEND.repository.UserRepository;
+import com.NgocDan.BACKEND.service.redis.InvalidatedTokenRedisService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.NonFinal;
@@ -52,7 +53,8 @@ public class CustomJwtDecoder implements JwtDecoder {
 
             // 3. Check Real-time User Status
             String userId = jwt.getSubject();
-            var user = userRepository.findById(Long.parseLong(userId))
+            var user = userRepository
+                    .findById(Long.parseLong(userId))
                     .orElseThrow(() -> new JwtException("USER_NOT_EXISTED"));
 
             if (user.getIsLocked()) {

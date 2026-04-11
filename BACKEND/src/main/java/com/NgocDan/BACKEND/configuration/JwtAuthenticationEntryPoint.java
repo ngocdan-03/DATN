@@ -1,24 +1,29 @@
 package com.NgocDan.BACKEND.configuration;
 
-import com.NgocDan.BACKEND.dto.response.ApiResponse;
-import com.NgocDan.BACKEND.exception.ErrorCode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import com.NgocDan.BACKEND.dto.response.ApiResponse;
+import com.NgocDan.BACKEND.exception.ErrorCode;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response,
-                         AuthenticationException authException) throws IOException {
+    public void commence(
+            HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
+            throws IOException {
 
         // Mặc định là lỗi chưa xác thực (2001)
         ErrorCode errorCode = ErrorCode.UNAUTHENTICATED;

@@ -1,15 +1,17 @@
 package com.NgocDan.BACKEND.service.redis;
 
-import com.NgocDan.BACKEND.model.redis.RefreshToken;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
-
 import java.time.Duration;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+
+import com.NgocDan.BACKEND.model.redis.RefreshToken;
+
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 @Service
 @RequiredArgsConstructor
@@ -45,9 +47,7 @@ public class RefreshTokenRedisService {
         Set<Object> jtis = redisTemplate.opsForSet().members(familyKey);
 
         if (jtis != null) {
-            Set<String> keysToDelete = jtis.stream()
-                    .map(jti -> RT_PREFIX + jti)
-                    .collect(Collectors.toSet());
+            Set<String> keysToDelete = jtis.stream().map(jti -> RT_PREFIX + jti).collect(Collectors.toSet());
             keysToDelete.add(familyKey);
             redisTemplate.delete(keysToDelete);
         }

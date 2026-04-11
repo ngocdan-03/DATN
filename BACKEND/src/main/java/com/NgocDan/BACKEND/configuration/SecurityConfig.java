@@ -25,16 +25,18 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
 
     // Mảng các Endpoint công khai cho Auth
-    private final String[] PUBLIC_ENDPOINTS_AUTH = {
-        "/auth/**"
-    };
+    private final String[] PUBLIC_ENDPOINTS_AUTH = {"/auth/**"};
 
     // Mảng các Endpoint cho khách vãn lai (Chỉ xem, không sửa xóa)
     private final String[] PUBLIC_ENDPOINTS_GUEST = {
-        "/posts/all",  "/posts/search", "/posts/{id}",
-        "/news/all", "/news/{id}",
+        "/posts/all",
+        "/posts/search",
+        "/posts/{id}",
+        "/news/all",
+        "/news/{id}",
         "/hello",
-            "/payment/vnpay-callback", "/payment/vnpay-ipn"   // Test hệ thống
+        "/payment/vnpay-callback",
+        "/payment/vnpay-ipn" // Test hệ thống
     };
 
     private final CustomJwtDecoder customJwtDecoder; // Khai báo decoder
@@ -47,7 +49,6 @@ public class SecurityConfig {
                 .permitAll() // Cho phép POST vào Auth
                 .requestMatchers(HttpMethod.GET, PUBLIC_ENDPOINTS_GUEST)
                 .permitAll() // Cho phép khách xem (GET)
-
                 .anyRequest()
                 .authenticated()); // Các yêu cầu khác phải có Token
 
@@ -65,13 +66,13 @@ public class SecurityConfig {
         return httpSecurity.build();
     }
 
-    // Cấu hình CORS để Frontend (React/Vue) gọi được API
+    // Cấu hình CORS để Frontend (React) gọi được API
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
 
         corsConfiguration.setAllowedOrigins(
-                List.of("http://localhost:3000", "http://localhost:5173")); // Domain Frontend
+                List.of("http://localhost:5174", "http://localhost:5173")); // Domain Frontend
         corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         corsConfiguration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cache-Control"));
         corsConfiguration.setAllowCredentials(true);

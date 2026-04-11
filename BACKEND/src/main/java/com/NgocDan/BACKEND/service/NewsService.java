@@ -1,5 +1,11 @@
 package com.NgocDan.BACKEND.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
 import com.NgocDan.BACKEND.dto.response.NewsDetailResponse;
 import com.NgocDan.BACKEND.dto.response.NewsResponse;
 import com.NgocDan.BACKEND.dto.response.PageResponse;
@@ -10,15 +16,11 @@ import com.NgocDan.BACKEND.exception.ErrorCode;
 import com.NgocDan.BACKEND.mapper.NewsMapper;
 import com.NgocDan.BACKEND.model.News;
 import com.NgocDan.BACKEND.repository.NewsRepository;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
@@ -36,9 +38,8 @@ public class NewsService {
         // Truyền thêm category vào hàm search
         Page<News> pageData = newsRepository.searchNewsCustom(keyword, category, NewsStatus.PUBLISHED, pageable);
 
-        var listNews = pageData.getContent().stream()
-                .map(newsMapper::toNewsResponse)
-                .toList();
+        var listNews =
+                pageData.getContent().stream().map(newsMapper::toNewsResponse).toList();
 
         return PageResponse.<NewsResponse>builder()
                 .currentPage(page)
@@ -50,8 +51,7 @@ public class NewsService {
     }
 
     public NewsDetailResponse getNewsById(Long id) {
-        News news = newsRepository.findById(id)
-                .orElseThrow(() -> new AppException(ErrorCode.NEWS_NOT_EXISTED));
+        News news = newsRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.NEWS_NOT_EXISTED));
 
         return newsMapper.toNewsDetailResponse(news);
     }

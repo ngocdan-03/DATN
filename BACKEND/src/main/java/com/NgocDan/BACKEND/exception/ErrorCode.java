@@ -42,7 +42,8 @@ public enum ErrorCode {
     WARD_ID_REQUIRED(3022, "Phuong khong duoc de trong", HttpStatus.BAD_REQUEST),
     IMAGES_REQUIRED(3023, "Anh dai dien khong duoc de trong", HttpStatus.BAD_REQUEST),
     AT_LEAST_ONE_IMAGE(3024, "Phai co it nhat 1 anh", HttpStatus.BAD_REQUEST),
-    LAND_CANNOT_HAVE_ROOMS(3025, "Loai bat dong san 'Dat' khong duoc co phong ngu hay phong tam", HttpStatus.BAD_REQUEST),
+    LAND_CANNOT_HAVE_ROOMS(
+            3025, "Loai bat dong san 'Dat' khong duoc co phong ngu hay phong tam", HttpStatus.BAD_REQUEST),
     WARD_NOT_FOUND(3026, "Phuong khong ton tai", HttpStatus.NOT_FOUND),
     TITLE_INVALID_SIZE(3027, "Tieu de phai tu 10 den 150 ky tu", HttpStatus.BAD_REQUEST),
     PRICE_TOO_LARGE(3028, "Gia phai nho hon 999999999999999", HttpStatus.BAD_REQUEST),
@@ -52,6 +53,7 @@ public enum ErrorCode {
     INVALID_DATE_FORMAT(3032, "Ngay thang khong hop le, dung dinh dang dd-MM-yyyy", HttpStatus.BAD_REQUEST),
     FORMAT_INVALID(3033, "Dinh dang du lieu khong hop le", HttpStatus.BAD_REQUEST),
     PASSWORD_REQUIRED(3034, "Mat khau khong duoc de trong", HttpStatus.BAD_REQUEST),
+    UPLOAD_SIZE_EXCEEDED(3035, "Kich thuoc file vuot qua gioi han cho phep", HttpStatus.BAD_REQUEST),
 
     // 1xxx: loi nghiep vu
     USER_EXISTED(1006, "Email nay da duoc dang ky", HttpStatus.BAD_REQUEST),
@@ -74,8 +76,7 @@ public enum ErrorCode {
     POST_NOT_FOUND(4002, "Bai dang khong ton tai", HttpStatus.NOT_FOUND),
 
     // 6xxx: Email Service
-    EMAIL_SEND_FAILED(6001, "Gui email that bai", HttpStatus.INTERNAL_SERVER_ERROR)
-    ;
+    EMAIL_SEND_FAILED(6001, "Gui email that bai", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final int code;
     private final String message;

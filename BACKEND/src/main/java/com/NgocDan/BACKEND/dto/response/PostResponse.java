@@ -1,10 +1,9 @@
 package com.NgocDan.BACKEND.dto.response;
 
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-
 import java.math.BigDecimal;
 
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Data
 @NoArgsConstructor
@@ -19,8 +18,8 @@ public class PostResponse {
     String thumbnailUrl;
     Integer bedrooms;
     Integer bathrooms;
-    String wardName;      // Sẽ map từ ward.name
+    String wardName; // Sẽ map từ ward.name
     String propertyType;
     String listingType;
-    String displayDate;   // Chuỗi ngày đã định dạng dd/MM/yyyy
+    String displayDate; // Chuỗi ngày đã định dạng dd/MM/yyyy
 }

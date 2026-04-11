@@ -1,8 +1,9 @@
 package com.NgocDan.BACKEND.dto.response;
 
+import java.math.BigDecimal;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import java.math.BigDecimal;
 
 @Data
 @Builder
@@ -11,7 +12,7 @@ import java.math.BigDecimal;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TransactionDetailResponse {
     Long id;
-    String invoiceNo;          // Mã hóa đơn (Ví dụ: INV-102)
+    String invoiceNo; // Mã hóa đơn (Ví dụ: INV-102)
 
     // Thông tin khách hàng (Lấy từ Entity User)
     String customerName;
@@ -23,7 +24,7 @@ public class TransactionDetailResponse {
     String type;
     String status;
     String description;
-    String transactionDate;    // dd/MM/yyyy HH:mm:ss
+    String transactionDate; // dd/MM/yyyy HH:mm:ss
 
     // Thông tin VNPay
     String vnpTxnRef;

@@ -1,11 +1,10 @@
 package com.NgocDan.BACKEND.dto.response;
 
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-
 import java.math.BigDecimal;
 import java.util.List;
 
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Data
 @NoArgsConstructor
@@ -24,16 +23,17 @@ public class DashboardOverviewResponse {
     // Biểu đồ tròn trạng thái
     List<StatusCount> statusDistribution;
 
-    @Data @AllArgsConstructor
+    @Data
+    @AllArgsConstructor
     public static class ViewTrendPoint {
         String label; // Định dạng "dd/MM"
         long value;
     }
 
-    @Data @AllArgsConstructor
+    @Data
+    @AllArgsConstructor
     public static class StatusCount {
         String status;
         long count;
     }
-
 }

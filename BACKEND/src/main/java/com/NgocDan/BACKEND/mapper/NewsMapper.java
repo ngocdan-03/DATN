@@ -1,20 +1,14 @@
 package com.NgocDan.BACKEND.mapper;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import com.NgocDan.BACKEND.dto.response.NewsDetailResponse;
 import com.NgocDan.BACKEND.dto.response.NewsResponse;
-import com.NgocDan.BACKEND.dto.response.UserResponse;
 import com.NgocDan.BACKEND.model.News;
-import com.NgocDan.BACKEND.model.Role;
-import com.NgocDan.BACKEND.model.User;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Named;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface NewsMapper {

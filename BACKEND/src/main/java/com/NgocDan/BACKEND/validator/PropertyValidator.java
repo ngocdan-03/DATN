@@ -1,9 +1,10 @@
 package com.NgocDan.BACKEND.validator;
 
-import com.NgocDan.BACKEND.dto.request.PostCreateRequest;
-import com.NgocDan.BACKEND.enums.PropertyType;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+
+import com.NgocDan.BACKEND.dto.request.PostCreateRequest;
+import com.NgocDan.BACKEND.enums.PropertyType;
 
 public class PropertyValidator implements ConstraintValidator<PropertyConstraint, PostCreateRequest> {
 

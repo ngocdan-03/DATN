@@ -1,16 +1,19 @@
 package com.NgocDan.BACKEND.controller;
 
+import jakarta.validation.Valid;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
 import com.NgocDan.BACKEND.dto.request.PasswordChangeRequest;
 import com.NgocDan.BACKEND.dto.request.UserUpdateRequest;
 import com.NgocDan.BACKEND.dto.response.ApiResponse;
 import com.NgocDan.BACKEND.dto.response.UserDashboardResponse;
 import com.NgocDan.BACKEND.service.UserService;
-import jakarta.validation.Valid;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/users")

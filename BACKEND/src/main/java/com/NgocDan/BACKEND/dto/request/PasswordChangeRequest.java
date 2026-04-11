@@ -1,8 +1,9 @@
 package com.NgocDan.BACKEND.dto.request;
 
-import com.NgocDan.BACKEND.validator.EmailConstraint;
-import com.NgocDan.BACKEND.validator.PasswordConstraint;
 import jakarta.validation.constraints.NotBlank;
+
+import com.NgocDan.BACKEND.validator.PasswordConstraint;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 

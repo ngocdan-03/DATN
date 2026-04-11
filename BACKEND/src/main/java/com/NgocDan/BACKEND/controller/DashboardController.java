@@ -1,15 +1,17 @@
 package com.NgocDan.BACKEND.controller;
 
-import com.NgocDan.BACKEND.dto.response.ApiResponse;
-import com.NgocDan.BACKEND.dto.response.DashboardOverviewResponse;
-import com.NgocDan.BACKEND.service.DashboardService;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.NgocDan.BACKEND.dto.response.ApiResponse;
+import com.NgocDan.BACKEND.dto.response.DashboardOverviewResponse;
+import com.NgocDan.BACKEND.service.DashboardService;
+
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 @RestController
 @RequestMapping("/dashboard")
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class DashboardController {
     DashboardService dashboardService;
+
     @GetMapping("/overview")
     @PreAuthorize("hasAuthority('GET_OVERVIEW')")
     public ApiResponse<DashboardOverviewResponse> getOverview() {

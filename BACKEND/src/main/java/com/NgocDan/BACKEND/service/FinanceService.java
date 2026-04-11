@@ -1,22 +1,5 @@
 package com.NgocDan.BACKEND.service;
 
-import com.NgocDan.BACKEND.dto.response.*;
-import com.NgocDan.BACKEND.exception.AppException;
-import com.NgocDan.BACKEND.exception.ErrorCode;
-import com.NgocDan.BACKEND.mapper.TransactionMapper;
-import com.NgocDan.BACKEND.model.Transaction;
-import com.NgocDan.BACKEND.repository.TransactionRepository;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -25,6 +8,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+
+import com.NgocDan.BACKEND.dto.response.*;
+import com.NgocDan.BACKEND.exception.AppException;
+import com.NgocDan.BACKEND.exception.ErrorCode;
+import com.NgocDan.BACKEND.mapper.TransactionMapper;
+import com.NgocDan.BACKEND.model.Transaction;
+import com.NgocDan.BACKEND.repository.TransactionRepository;
+
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -70,8 +71,12 @@ public class FinanceService {
         if (page == 1 && (keyword == null || keyword.isEmpty())) {
             List<Object[]> rawStats = transactionRepository.getRawMonthlyStats(userId);
             chartData = fillMissingMonths(rawStats);
-            totalDeposit = chartData.stream().map(MonthlyChartResponse::getTotalDeposit).reduce(BigDecimal.ZERO, BigDecimal::add);
-            totalSpend = chartData.stream().map(MonthlyChartResponse::getTotalSpend).reduce(BigDecimal.ZERO, BigDecimal::add);
+            totalDeposit = chartData.stream()
+                    .map(MonthlyChartResponse::getTotalDeposit)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            totalSpend = chartData.stream()
+                    .map(MonthlyChartResponse::getTotalSpend)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
         }
 
         return FinanceSummaryResponse.builder()
@@ -89,11 +94,13 @@ public class FinanceService {
         // đổ dữ liệu thô vào map để dễ truy cập
         for (Object[] row : rawstats) {
             String label = row[0].toString(); // định dạng "MM-yyyy"
-            statsMap.put(label, MonthlyChartResponse.builder()
-                    .lable(label)
-                    .totalDeposit((BigDecimal) row[1])
-                    .totalSpend((BigDecimal) row[2])
-                    .build());
+            statsMap.put(
+                    label,
+                    MonthlyChartResponse.builder()
+                            .lable(label)
+                            .totalDeposit((BigDecimal) row[1])
+                            .totalSpend((BigDecimal) row[2])
+                            .build());
         }
 
         List<MonthlyChartResponse> filledData = new ArrayList<>();
@@ -105,11 +112,13 @@ public class FinanceService {
             String monthLabel = now.minusMonths(i).format(formatter);
 
             // nếu không có dữ liệu cho tháng này, tạo bản ghi với 0
-            MonthlyChartResponse mothData = statsMap.getOrDefault(monthLabel, MonthlyChartResponse.builder()
-                    .lable(monthLabel)
-                    .totalDeposit(BigDecimal.ZERO)
-                    .totalSpend(BigDecimal.ZERO)
-                    .build());
+            MonthlyChartResponse mothData = statsMap.getOrDefault(
+                    monthLabel,
+                    MonthlyChartResponse.builder()
+                            .lable(monthLabel)
+                            .totalDeposit(BigDecimal.ZERO)
+                            .totalSpend(BigDecimal.ZERO)
+                            .build());
             filledData.add(mothData);
         }
         return filledData;
@@ -122,7 +131,8 @@ public class FinanceService {
         Long userId = Long.parseLong(sub);
 
         // tìm giao dịch theo id
-        Transaction transaction = transactionRepository.findByIdWithDetails(id)
+        Transaction transaction = transactionRepository
+                .findByIdWithDetails(id)
                 .orElseThrow(() -> new AppException(ErrorCode.TRANSACTION_NOT_EXISTED));
 
         // kiểm tra giao dịch có thuộc về user hay không

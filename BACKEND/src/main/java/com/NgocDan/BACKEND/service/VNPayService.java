@@ -1,5 +1,18 @@
 package com.NgocDan.BACKEND.service;
 
+import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+import jakarta.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.NgocDan.BACKEND.dto.request.PaymentRequest;
 import com.NgocDan.BACKEND.dto.response.PaymentCallbackResponse;
 import com.NgocDan.BACKEND.dto.response.PaymentResponse;
@@ -13,21 +26,11 @@ import com.NgocDan.BACKEND.model.User;
 import com.NgocDan.BACKEND.repository.TransactionRepository;
 import com.NgocDan.BACKEND.repository.UserRepository;
 import com.NgocDan.BACKEND.util.VNPayUtil;
-import jakarta.servlet.http.HttpServletRequest;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
-import java.util.*;
 
 @Slf4j
 @Service
@@ -36,10 +39,13 @@ import java.util.*;
 public class VNPayService {
     @Value("${vnpay.tmn-code}")
     String tmnCode;
+
     @Value("${vnpay.hash-secret}")
     String hashSecret;
+
     @Value("${vnpay.url}")
     String vnpUrl;
+
     @Value("${vnpay.return-url}")
     String returnUrl;
 
@@ -56,8 +62,7 @@ public class VNPayService {
         String sub = SecurityContextHolder.getContext().getAuthentication().getName();
 
         Long userId = Long.parseLong(sub);
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         // tạo transaction với trạng thái PENDING
         Transaction transaction = Transaction.builder()
@@ -96,8 +101,13 @@ public class VNPayService {
             String fieldValue = vnp_Params.get(fieldName);
             if (fieldValue != null && fieldValue.length() > 0) {
                 hashData.append(fieldName).append('=').append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII));
-                query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII)).append('=').append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII));
-                if (itr.hasNext()) { query.append('&'); hashData.append('&'); }
+                query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII))
+                        .append('=')
+                        .append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII));
+                if (itr.hasNext()) {
+                    query.append('&');
+                    hashData.append('&');
+                }
             }
         }
 
@@ -105,15 +115,13 @@ public class VNPayService {
         String vnp_SecureHash = VNPayUtil.hmacSHA512(hashSecret, hashData.toString());
         queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
 
-        return PaymentResponse.builder()
-                .paymentUrl(vnpUrl + "?" + queryUrl)
-                .build();
+        return PaymentResponse.builder().paymentUrl(vnpUrl + "?" + queryUrl).build();
     }
 
     // Xử lý phản hồi từ VNPay sau khi thanh toán
     @Transactional
     public PaymentCallbackResponse processCallback(Map<String, String> queryParams) {
-        if(!verifySignature(queryParams)){
+        if (!verifySignature(queryParams)) {
             return PaymentCallbackResponse.builder()
                     .status("Failed")
                     .message("du liu khogn hop le")
@@ -123,11 +131,12 @@ public class VNPayService {
         String vnp_TxnRef = queryParams.get("vnp_TxnRef");
         String responseCode = queryParams.get("vnp_ResponseCode");
 
-        Transaction transaction = transactionRepository.findByVnpTxnRef(vnp_TxnRef)
+        Transaction transaction = transactionRepository
+                .findByVnpTxnRef(vnp_TxnRef)
                 .orElseThrow(() -> new AppException(ErrorCode.TRANSACTION_NOT_EXISTED));
 
         // cập nhất nếu chưa xử lý boiwr ipn
-        if(TransactionStatus.PENDING.equals(transaction.getStatus())){
+        if (TransactionStatus.PENDING.equals(transaction.getStatus())) {
             updateTransactionData(transaction, queryParams);
         }
         return PaymentCallbackResponse.builder()
@@ -140,30 +149,30 @@ public class VNPayService {
 
     // IPN endpoint để VNPay gọi lại
     @Transactional
-    public Map<String, String> processIPN(Map<String, String> queryParams){
+    public Map<String, String> processIPN(Map<String, String> queryParams) {
         log.info("nhan thong bao IPN tu VNPay cho don hang: {}", queryParams.get("vnp_TxnRef"));
 
         // verify chữ kí
-        if(!verifySignature(queryParams)){
+        if (!verifySignature(queryParams)) {
             return Map.of("RspCode", "97", "Message", "Invalid Checksum");
         }
 
         // kiểm tra transaction toonf tại chưa
         String vnp_TxnRef = queryParams.get("vnp_TxnRef");
-        Transaction transaction = transactionRepository.findByVnpTxnRef(vnp_TxnRef)
-                .orElse(null);
-        if (transaction == null){
+        Transaction transaction =
+                transactionRepository.findByVnpTxnRef(vnp_TxnRef).orElse(null);
+        if (transaction == null) {
             return Map.of("RspCode", "01", "Message", "Order not found");
         }
 
         // kiểm tra số tiền vnp_amount trả về
-        long vnp_Amount = Long.parseLong(queryParams.get("vnp_Amount"))/ 100;
-        if(transaction.getAmount().longValue() != vnp_Amount){
+        long vnp_Amount = Long.parseLong(queryParams.get("vnp_Amount")) / 100;
+        if (transaction.getAmount().longValue() != vnp_Amount) {
             return Map.of("RspCode", "04", "Message", "Invalid amount");
         }
 
         // kiểm tra trạng thái transaction
-        if(!TransactionStatus.PENDING.equals(transaction.getStatus())){
+        if (!TransactionStatus.PENDING.equals(transaction.getStatus())) {
             return Map.of("RspCode", "02", "Message", "Order already confirmed");
         }
 
@@ -171,15 +180,14 @@ public class VNPayService {
         updateTransactionData(transaction, queryParams);
 
         return Map.of("RspCode", "00", "Message", "Confirm Success");
-
     }
 
     // hàm bổ trợ dùng chung
     // hàm update transaction status và balance user
-    private void updateTransactionData(Transaction transaction, Map<String, String> queryParams){
+    private void updateTransactionData(Transaction transaction, Map<String, String> queryParams) {
         String responseCode = queryParams.get("vnp_ResponseCode");
 
-        if ("00".equals(responseCode)){
+        if ("00".equals(responseCode)) {
             transaction.setStatus(TransactionStatus.SUCCESS);
             transaction.setVnpTransactionNo(queryParams.get("vnp_TransactionNo"));
 
@@ -187,14 +195,14 @@ public class VNPayService {
             User user = transaction.getUser();
             user.setBalance(user.getBalance().add(transaction.getAmount()));
             userRepository.save(user);
-        }else {
+        } else {
             transaction.setStatus(TransactionStatus.FAILED);
         }
         transactionRepository.save(transaction);
     }
 
     // hàm verify chữ kí
-    private boolean verifySignature(Map<String, String> queryParams){
+    private boolean verifySignature(Map<String, String> queryParams) {
         String vnp_SecureHash = queryParams.get("vnp_SecureHash");
         Map<String, String> fields = new HashMap<>(queryParams);
         fields.remove("vnp_SecureHash");
@@ -203,12 +211,12 @@ public class VNPayService {
         List<String> fieldNames = new ArrayList<>(fields.keySet());
         Collections.sort(fieldNames);
         StringBuilder hashData = new StringBuilder();
-        for(Iterator<String> itr = fieldNames.iterator(); itr.hasNext();){
+        for (Iterator<String> itr = fieldNames.iterator(); itr.hasNext(); ) {
             String fieldName = itr.next();
             String fieldValue = fields.get(fieldName);
-            if((fieldValue != null) && (fieldValue.length()>0)){
+            if ((fieldValue != null) && (fieldValue.length() > 0)) {
                 hashData.append(fieldName).append('=').append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII));
-                if(itr.hasNext()) hashData.append('&');
+                if (itr.hasNext()) hashData.append('&');
             }
         }
         String checkSum = VNPayUtil.hmacSHA512(hashSecret, hashData.toString());

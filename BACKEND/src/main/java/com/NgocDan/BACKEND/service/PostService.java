@@ -1,30 +1,31 @@
 package com.NgocDan.BACKEND.service;
 
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+
+import jakarta.transaction.Transactional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+
 import com.NgocDan.BACKEND.dto.request.PostCreateRequest;
 import com.NgocDan.BACKEND.dto.response.*;
 import com.NgocDan.BACKEND.enums.*;
 import com.NgocDan.BACKEND.exception.AppException;
 import com.NgocDan.BACKEND.exception.ErrorCode;
-import com.NgocDan.BACKEND.mapper.NewsMapper;
 import com.NgocDan.BACKEND.mapper.PostMapper;
 import com.NgocDan.BACKEND.model.*;
 import com.NgocDan.BACKEND.repository.*;
 import com.NgocDan.BACKEND.service.redis.InteractionRedisService;
-import jakarta.transaction.Transactional;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -60,12 +61,19 @@ public class PostService {
 
     // get có bộ lọc
     public PageResponse<PostResponse> getFilteredPosts(
-            String keyword, Integer wardId, PropertyType propertyType,
-            ListingType listingType, LegalStatus legalStatus,
-            BigDecimal minPrice, BigDecimal maxPrice,
-            BigDecimal minArea, BigDecimal maxArea,
-            Integer minBedrooms, Integer minBathrooms,
-            int page, int size) {
+            String keyword,
+            Integer wardId,
+            PropertyType propertyType,
+            ListingType listingType,
+            LegalStatus legalStatus,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            BigDecimal minArea,
+            BigDecimal maxArea,
+            Integer minBedrooms,
+            Integer minBathrooms,
+            int page,
+            int size) {
 
         Pageable pageable = PageRequest.of(page - 1, size);
 
@@ -73,9 +81,19 @@ public class PostService {
         String searchKey = (keyword != null && !keyword.trim().isEmpty()) ? keyword : null;
 
         Page<Post> pageData = postRepository.searchPostsAdvanced(
-                PostStatus.APPROVED, searchKey, wardId, propertyType,
-                listingType, legalStatus, minPrice, maxPrice,
-                minArea, maxArea, minBedrooms, minBathrooms, pageable);
+                PostStatus.APPROVED,
+                searchKey,
+                wardId,
+                propertyType,
+                listingType,
+                legalStatus,
+                minPrice,
+                maxPrice,
+                minArea,
+                maxArea,
+                minBedrooms,
+                minBathrooms,
+                pageable);
 
         return PageResponse.<PostResponse>builder()
                 .currentPage(page)
@@ -89,8 +107,7 @@ public class PostService {
     // lấy chi tiết bài đăng
     public PostDetailResponse getPostDetail(Long postId) {
         // 1. Tìm bài đăng
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND));
+        Post post = postRepository.findById(postId).orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND));
 
         // 2. Map sang DTO
         PostDetailResponse response = postMapper.toPostDetailResponse(post);
@@ -120,14 +137,14 @@ public class PostService {
     }
 
     // thêm tương tác(dùng chung)
-    private void saveNewInteraction(Long userId, Long postId, InteractionType type){
+    private void saveNewInteraction(Long userId, Long postId, InteractionType type) {
         // check nếu là view
-        if(type == InteractionType.VIEW){
-            if(interactionRedisService.hasViewed(userId, postId)){
+        if (type == InteractionType.VIEW) {
+            if (interactionRedisService.hasViewed(userId, postId)) {
                 return;
             }
             saveToDatabase(userId, postId, type);
-            interactionRedisService.markAsViewed(userId, postId, 1);// khóa lại sau 1 giờ mới tính 1 lượt xem
+            interactionRedisService.markAsViewed(userId, postId, 1); // khóa lại sau 1 giờ mới tính 1 lượt xem
             return;
         }
         // đối với các loại khác
@@ -153,18 +170,18 @@ public class PostService {
         Long userId = Long.parseLong(sub);
 
         // check post
-        if(!postRepository.existsById(postId)){
+        if (!postRepository.existsById(postId)) {
             throw new AppException(ErrorCode.POST_NOT_FOUND);
         }
 
         // Kiểm tra xem đã lưu chưa
-        Optional<UserInteraction> existing = userInteractionRepository
-                .findByUserIdAndPostIdAndInteractionType(userId, postId, InteractionType.SAVE);
-        if(existing.isPresent()){
+        Optional<UserInteraction> existing =
+                userInteractionRepository.findByUserIdAndPostIdAndInteractionType(userId, postId, InteractionType.SAVE);
+        if (existing.isPresent()) {
             // bỏ lưu
             userInteractionRepository.delete(existing.get());
             log.info("user:{} da bo luu:{}", userId, postId);
-        }else {
+        } else {
             saveNewInteraction(userId, postId, InteractionType.SAVE);
             log.info("user:{} da luu bai:{}", userId, postId);
         }
@@ -172,12 +189,12 @@ public class PostService {
 
     // liên lạc
     @Transactional
-    public void recordContact(Long postId){
+    public void recordContact(Long postId) {
         String sub = SecurityContextHolder.getContext().getAuthentication().getName();
         Long userId = Long.parseLong(sub);
 
         // check post
-        if(!postRepository.existsById(postId)){
+        if (!postRepository.existsById(postId)) {
             throw new AppException(ErrorCode.POST_NOT_FOUND);
         }
 
@@ -192,11 +209,10 @@ public class PostService {
         String sub = SecurityContextHolder.getContext().getAuthentication().getName();
         // 2. Chuyển String ID sang Long và tìm User trong DB
         Long userId = Long.parseLong(sub);
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         // kiểm tra tài khoản có đủ tiền đăng tin không
-        if(user.getBalance().compareTo(POST_PRICE) < 0){
+        if (user.getBalance().compareTo(POST_PRICE) < 0) {
             throw new AppException(ErrorCode.INSUFFICIENT_BALANCE);
         }
         // trừ tiền đăng tin
@@ -204,7 +220,8 @@ public class PostService {
         userRepository.save(user);
 
         // 3. Kiểm tra Phường/Xã (Ward) từ request
-        Ward ward = wardRepository.findById(request.getWardId())
+        Ward ward = wardRepository
+                .findById(request.getWardId())
                 .orElseThrow(() -> new AppException(ErrorCode.WARD_NOT_FOUND));
 
         // 4. Map dữ liệu từ DTO sang Entity Post
@@ -219,10 +236,7 @@ public class PostService {
         // Nhờ có CascadeType.ALL, danh sách này sẽ tự động được lưu vào bảng post_images
         if (request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
             List<PostImage> postImages = request.getImageUrls().stream()
-                    .map(url -> PostImage.builder()
-                            .imageUrl(url)
-                            .post(post)
-                            .build())
+                    .map(url -> PostImage.builder().imageUrl(url).post(post).build())
                     .toList();
             post.setImages(postImages);
         }
@@ -245,10 +259,7 @@ public class PostService {
     }
 
     // lấy bài đăng của user theo form dashboard
-    public PageResponse<PostDashboardResponse> getMyPosts(
-            String keyword,
-            PostStatus status,
-            int page, int size) {
+    public PageResponse<PostDashboardResponse> getMyPosts(String keyword, PostStatus status, int page, int size) {
         // lấy id từ Security Context
         String sub = SecurityContextHolder.getContext().getAuthentication().getName();
         Long userId = Long.parseLong(sub);
@@ -260,7 +271,8 @@ public class PostService {
         Pageable pageable = PageRequest.of(page - 1, size);
 
         // lấy bài đăng của user
-        Page<PostDashboardResponse> pageData = postRepository.findPostDashboardByUserId(userId, searchKeyword, status , pageable);
+        Page<PostDashboardResponse> pageData =
+                postRepository.findPostDashboardByUserId(userId, searchKeyword, status, pageable);
 
         return PageResponse.<PostDashboardResponse>builder()
                 .currentPage(page)
@@ -273,17 +285,16 @@ public class PostService {
 
     // xoá bài đăng
     @Transactional
-    public void deleteMyPost(Long postId){
+    public void deleteMyPost(Long postId) {
         // check post tồn tại không
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND));
+        Post post = postRepository.findById(postId).orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND));
 
         // lấy userId từ security context
         String sub = SecurityContextHolder.getContext().getAuthentication().getName();
         Long userId = Long.parseLong(sub);
 
         // kiểm tra bài đăng này có thuộc về user không
-        if(!post.getUser().getId().equals(userId)){
+        if (!post.getUser().getId().equals(userId)) {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
 
@@ -291,7 +302,6 @@ public class PostService {
         post.setStatus(PostStatus.DELETED);
         postRepository.save(post);
         log.info("User {} da xoa bai: {}", userId, post.getTitle());
-
     }
 
     // lấy bài đăng đã lưu
@@ -306,7 +316,8 @@ public class PostService {
         String searchKeyword = (keyword != null && !keyword.trim().isEmpty()) ? keyword.trim() : null;
 
         // 3. Gọi Repo (Dữ liệu đã là PostDashboardResponse)
-        Page<PostDashboardResponse> pageData = postRepository.findSavedPostsDashboardByUserId(userId, searchKeyword, pageable);
+        Page<PostDashboardResponse> pageData =
+                postRepository.findSavedPostsDashboardByUserId(userId, searchKeyword, pageable);
 
         // 4. Trả về PageResponse
         return PageResponse.<PostDashboardResponse>builder()

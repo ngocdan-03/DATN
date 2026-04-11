@@ -1,5 +1,22 @@
 package com.NgocDan.BACKEND.service;
 
+import java.security.SecureRandom;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+
+import jakarta.transaction.Transactional;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+import com.nimbusds.jose.*;
+import com.nimbusds.jose.crypto.MACSigner;
+import com.nimbusds.jose.crypto.MACVerifier;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
+
 import com.NgocDan.BACKEND.configuration.JwtConfig;
 import com.NgocDan.BACKEND.dto.request.*;
 import com.NgocDan.BACKEND.dto.response.LoginResponse;
@@ -16,24 +33,11 @@ import com.NgocDan.BACKEND.repository.UserRepository;
 import com.NgocDan.BACKEND.service.redis.InvalidatedTokenRedisService;
 import com.NgocDan.BACKEND.service.redis.OtpRedisService;
 import com.NgocDan.BACKEND.service.redis.RefreshTokenRedisService;
-import com.nimbusds.jose.*;
-import com.nimbusds.jose.crypto.MACSigner;
-import com.nimbusds.jose.crypto.MACVerifier;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.SignedJWT;
-import jakarta.transaction.Transactional;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-
-import java.security.SecureRandom;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
 
 @Slf4j
 @Service
@@ -69,16 +73,19 @@ public class AuthService {
                 .roles(new HashSet<>(java.util.List.of(role)))
                 .build();
         userRepository.save(user);
-//        sendOtp(user.getEmail(), "verify");
+        //        sendOtp(user.getEmail(), "verify");
     }
 
     // 2. Đăng nhập
     public LoginResponse login(LoginRequest request) {
-        var user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        var user = userRepository
+                .findByEmail(request.getEmail())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         if (user.getIsLocked()) throw new AppException(ErrorCode.USER_LOCKED);
         if (!user.getIsVerified()) throw new AppException(ErrorCode.USER_NOT_VERIFIED);
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) throw new AppException(ErrorCode.PASSWORD_INCORRECT);
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword()))
+            throw new AppException(ErrorCode.PASSWORD_INCORRECT);
 
         String jtiAT = UUID.randomUUID().toString();
         String jtiRT = UUID.randomUUID().toString();
@@ -93,7 +100,13 @@ public class AuthService {
 
         return LoginResponse.builder()
                 .accessToken(generateAT(user, jtiAT, familyId))
-                .refreshToken(generateRT(user, jtiRT, familyId, Instant.now().plus(jwtConfig.getRefreshDuration(), ChronoUnit.SECONDS).toEpochMilli()))
+                .refreshToken(generateRT(
+                        user,
+                        jtiRT,
+                        familyId,
+                        Instant.now()
+                                .plus(jwtConfig.getRefreshDuration(), ChronoUnit.SECONDS)
+                                .toEpochMilli()))
                 .authenticated(true)
                 .user(userMapper.toUserResponse(user))
                 .build();
@@ -117,20 +130,27 @@ public class AuthService {
             refreshTokenRedisService.delete(jti);
             String newJtiAt = UUID.randomUUID().toString();
             String newJtiRt = UUID.randomUUID().toString();
-            var user = userRepository.findById(Long.parseLong(userId)).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+            var user = userRepository
+                    .findById(Long.parseLong(userId))
+                    .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
             long ttl = Math.max(1, (fixedExp - System.currentTimeMillis()) / 1000);
-            refreshTokenRedisService.save(RefreshToken.builder()
-                    .id(newJtiRt).userId(userId).familyId(familyId)
-                    .build(), ttl);
+            refreshTokenRedisService.save(
+                    RefreshToken.builder()
+                            .id(newJtiRt)
+                            .userId(userId)
+                            .familyId(familyId)
+                            .build(),
+                    ttl);
 
             return RefreshResponse.builder()
                     .accessToken(generateAT(user, newJtiAt, familyId))
                     .refreshToken(generateRT(user, newJtiRt, familyId, fixedExp))
-                    .authenticated(true).build();
+                    .authenticated(true)
+                    .build();
         } catch (AppException e) {
             throw e;
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new AppException(ErrorCode.INVALID_TOKEN);
         }
     }
@@ -149,7 +169,8 @@ public class AuthService {
             // Chỉ lưu Blacklist nếu AT chưa hết hạn
             if (expiryTime.getTime() > currentTime) {
                 long ttl = (expiryTime.getTime() - currentTime) / 1000;
-                invalidatedTokenRedisService.save(InvalidatedToken.builder().id(jti).build(), ttl);
+                invalidatedTokenRedisService.save(
+                        InvalidatedToken.builder().id(jti).build(), ttl);
             }
         } catch (AppException e) {
             throw e;
@@ -164,7 +185,8 @@ public class AuthService {
         userRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         String otp = String.format("%06d", secureRandom.nextInt(1000000));
-        OtpEmail otpEmail = OtpEmail.builder().email(email).otp(otp).purpose(purpose).build();
+        OtpEmail otpEmail =
+                OtpEmail.builder().email(email).otp(otp).purpose(purpose).build();
 
         otpRedisService.save(otpEmail, 180L); // 3 phút
         otpRedisService.saveCooldown(email, purpose, 60);
@@ -177,7 +199,9 @@ public class AuthService {
         String savedOtp = otpRedisService.getOtp(request.getEmail(), "verify");
         if (savedOtp == null || !savedOtp.equals(request.getCode())) throw new AppException(ErrorCode.INVALID_OTP);
 
-        var user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        var user = userRepository
+                .findByEmail(request.getEmail())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         user.setIsVerified(true);
         userRepository.save(user);
         otpRedisService.deleteOtp(request.getEmail(), "verify");
@@ -188,7 +212,9 @@ public class AuthService {
         String savedOtp = otpRedisService.getOtp(request.getEmail(), "forgot");
         if (savedOtp == null || !savedOtp.equals(request.getCode())) throw new AppException(ErrorCode.INVALID_OTP);
 
-        var user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        var user = userRepository
+                .findByEmail(request.getEmail())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
         otpRedisService.deleteOtp(request.getEmail(), "forgot");
@@ -206,9 +232,9 @@ public class AuthService {
                 throw new AppException(ErrorCode.INVALID_TOKEN);
             }
             return signedJWT;
-        }catch (AppException e) {
+        } catch (AppException e) {
             throw e;
-        }catch (java.text.ParseException | JOSEException e) {
+        } catch (java.text.ParseException | JOSEException e) {
             throw new AppException(ErrorCode.INVALID_TOKEN);
         }
     }
@@ -237,9 +263,11 @@ public class AuthService {
         try {
             jwsObject.sign(new MACSigner(jwtConfig.getSignerKey().getBytes()));
             return jwsObject.serialize();
-        }catch (AppException e) {
+        } catch (AppException e) {
             throw e;
-        }catch (JOSEException e) { throw new AppException(ErrorCode.TOKEN_SIGNING_FAILED); }
+        } catch (JOSEException e) {
+            throw new AppException(ErrorCode.TOKEN_SIGNING_FAILED);
+        }
     }
 
     // 11. Tạo Access Token
@@ -248,17 +276,25 @@ public class AuthService {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .subject(user.getId().toString())
                 .issueTime(new Date(now.toEpochMilli()))
-                .expirationTime(new Date(now.plus(jwtConfig.getValidDuration(), ChronoUnit.SECONDS).toEpochMilli()))
-                .jwtID(jti).claim("familyId", familyId).claim("scope", buildScope(user)).build();
+                .expirationTime(new Date(now.plus(jwtConfig.getValidDuration(), ChronoUnit.SECONDS)
+                        .toEpochMilli()))
+                .jwtID(jti)
+                .claim("familyId", familyId)
+                .claim("scope", buildScope(user))
+                .build();
         return signToken(claims);
     }
 
     // 12. Tạo Refresh Token
     public String generateRT(User user, String jti, String familyId, long fixedExp) {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
-                .subject(user.getId().toString()).issueTime(new Date())
-                .expirationTime(new Date(fixedExp)).jwtID(jti)
-                .claim("familyId", familyId).claim("fixed_exp", fixedExp).build();
+                .subject(user.getId().toString())
+                .issueTime(new Date())
+                .expirationTime(new Date(fixedExp))
+                .jwtID(jti)
+                .claim("familyId", familyId)
+                .claim("fixed_exp", fixedExp)
+                .build();
         return signToken(claims);
     }
 
@@ -268,7 +304,8 @@ public class AuthService {
         if (!CollectionUtils.isEmpty(user.getRoles())) {
             user.getRoles().forEach(role -> {
                 sj.add("ROLE_" + role.getName());
-                if (!CollectionUtils.isEmpty(role.getPermissions())) role.getPermissions().forEach(p -> sj.add(p.getName()));
+                if (!CollectionUtils.isEmpty(role.getPermissions()))
+                    role.getPermissions().forEach(p -> sj.add(p.getName()));
             });
         }
         return sj.toString();

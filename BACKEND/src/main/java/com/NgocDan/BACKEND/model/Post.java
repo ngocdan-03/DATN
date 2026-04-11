@@ -46,6 +46,7 @@ public class Post {
 
     @Builder.Default
     Integer bedrooms = 0;
+
     @Builder.Default
     Integer bathrooms = 0;
 

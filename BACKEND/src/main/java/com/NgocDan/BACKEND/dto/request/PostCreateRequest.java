@@ -1,19 +1,18 @@
 package com.NgocDan.BACKEND.dto.request;
 
+import java.math.BigDecimal;
+import java.util.List;
+
+import jakarta.validation.constraints.*;
+
 import com.NgocDan.BACKEND.enums.LegalStatus;
 import com.NgocDan.BACKEND.enums.ListingType;
 import com.NgocDan.BACKEND.enums.PropertyType;
-import com.NgocDan.BACKEND.validator.EmailConstraint;
-import com.NgocDan.BACKEND.validator.PasswordConstraint;
 import com.NgocDan.BACKEND.validator.PropertyConstraint;
 import com.NgocDan.BACKEND.validator.UrlConstraint;
-import jakarta.validation.constraints.*;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.validator.constraints.URL;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
