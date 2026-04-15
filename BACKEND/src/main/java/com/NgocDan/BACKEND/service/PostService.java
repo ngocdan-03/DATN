@@ -154,7 +154,7 @@ public class PostService {
             );
 
             if (!canInteract) {
-                log.info("Hành động {} của user {} vào post {} bị chặn do spam.", type, userId, postId);
+                log.info("Hanh dong {} cua user {} vao post {} bi chan do spam.", type, userId, postId);
                 return;
             }
         }
