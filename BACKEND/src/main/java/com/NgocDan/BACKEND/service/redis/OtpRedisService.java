@@ -32,13 +32,13 @@ public class OtpRedisService {
         redisTemplate.delete("otp:" + purpose + ":" + email);
     }
 
-    public void saveCooldown(String email, String purpose, long seconds) {
+    public boolean checkAndSetCooldown(String email, String purpose, long seconds) {
         String key = "otp:cooldown:" + purpose + ":" + email;
-        redisTemplate.opsForValue().set(key, "locked", Duration.ofSeconds(seconds));
-    }
 
-    public boolean isCooldownExists(String email, String purpose) {
-        String key = "otp:cooldown:" + purpose + ":" + email;
-        return Boolean.TRUE.equals(redisTemplate.hasKey(key));
+        // setIfAbsent: Nếu chưa có key thì tạo key với TTL và trả về true. Nếu đã có thì trả về false.
+        Boolean success = redisTemplate.opsForValue()
+                .setIfAbsent(key, "locked", Duration.ofSeconds(seconds));
+
+        return Boolean.TRUE.equals(success);
     }
 }

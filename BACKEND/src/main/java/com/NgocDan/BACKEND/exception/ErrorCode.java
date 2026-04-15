@@ -70,6 +70,8 @@ public enum ErrorCode {
     OLD_PASSWORD_INCORRECT(1005, "Mat khau cu khong dung", HttpStatus.BAD_REQUEST),
     NEW_PASSWORD_SAME_AS_OLD(1006, "Mat khau moi khong duoc giong mat khau cu", HttpStatus.BAD_REQUEST),
     CONFIRM_PASSWORD_NOT_MATCH(1007, "Mat khau xac nhan khong khop", HttpStatus.BAD_REQUEST),
+    POST_TOO_FREQUENT(1008, "Dang tin qua nhieu lan, vui long thu lai sau", HttpStatus.TOO_MANY_REQUESTS),
+    TOO_MANY_REQUESTS(1009, "Yeu cau qua nhieu lan, vui long thu lai sau", HttpStatus.TOO_MANY_REQUESTS),
 
     // 4xxx: Post & New Service
     NEWS_NOT_EXISTED(4001, "Tin tuc khong ton tai", HttpStatus.NOT_FOUND),

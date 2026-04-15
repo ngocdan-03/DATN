@@ -12,19 +12,15 @@ import lombok.experimental.FieldDefaults;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class InteractionRedisService {
+public class PostRedisService {
 
     RedisTemplate<String, Object> redisTemplate;
 
-    private String getInteractionKey(Long userId, Long postId, String interactionType) {
-        return "interaction:" + interactionType + ":" + userId + ":" + postId;
-    }
-
-    public boolean isAllowedToInteract(Long userId, Long postId, String interactionType, long hours) {
-        String key = getInteractionKey(userId, postId, interactionType);
+    public boolean checkAndSetPostCooldown(Long userId, long seconds) {
+        String key = "post:cooldown:" + userId;
 
         Boolean success = redisTemplate.opsForValue()
-                .setIfAbsent(key, "locked", Duration.ofHours(hours));
+                .setIfAbsent(key, "locked", Duration.ofSeconds(seconds));
 
         return Boolean.TRUE.equals(success);
     }

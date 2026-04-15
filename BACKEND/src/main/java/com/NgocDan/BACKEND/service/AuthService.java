@@ -183,15 +183,21 @@ public class AuthService {
 
     // 5. Gửi mã OTP
     public void sendOtp(String email, String purpose) {
-        if (otpRedisService.isCooldownExists(email, purpose)) throw new AppException(ErrorCode.OTP_TOO_FREQUENT);
+        if (!otpRedisService.checkAndSetCooldown(email, purpose, 60)) {
+            throw new AppException(ErrorCode.OTP_TOO_FREQUENT);
+        }
+
         userRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         String otp = String.format("%06d", secureRandom.nextInt(1000000));
-        OtpEmail otpEmail =
-                OtpEmail.builder().email(email).otp(otp).purpose(purpose).build();
+        OtpEmail otpEmail = OtpEmail.builder()
+                .email(email)
+                .otp(otp)
+                .purpose(purpose)
+                .build();
 
-        otpRedisService.save(otpEmail, 180L); // 3 phút
-        otpRedisService.saveCooldown(email, purpose, 60);
+        otpRedisService.save(otpEmail, 180L);
+
         emailStreamProducer.publishOtpEmail(otpEmail);
     }
 

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+import com.NgocDan.BACKEND.service.redis.PostRedisService;
 import jakarta.transaction.Transactional;
 
 import org.springframework.data.domain.Page;
@@ -38,6 +39,7 @@ public class PostService {
     WardRepository wardRepository;
     UserRepository userRepository;
     InteractionRedisService interactionRedisService;
+    PostRedisService postRedisService;
     PostMapper postMapper;
 
     // chi phí đằn tin
@@ -136,22 +138,31 @@ public class PostService {
         return response;
     }
 
-    // thêm tương tác(dùng chung)
+    // thêm tương tác (dùng chung cho cả VIEW, SAVE, CONTACT)
     private void saveNewInteraction(Long userId, Long postId, InteractionType type) {
-        // check nếu là view
-        if (type == InteractionType.VIEW) {
-            if (interactionRedisService.hasViewed(userId, postId)) {
+        //Cấu hình thời gian khóa (tính bằng Giờ) cho từng loại hành động
+        long cooldownHours = switch (type) {
+            case VIEW -> 1;
+            case CONTACT -> 12;
+            case SAVE -> 24;
+        };
+
+        // Kiểm tra với Redis
+        if (cooldownHours > 0) {
+            boolean canInteract = interactionRedisService.isAllowedToInteract(
+                    userId, postId, type.name(), cooldownHours
+            );
+
+            if (!canInteract) {
+                log.info("Hành động {} của user {} vào post {} bị chặn do spam.", type, userId, postId);
                 return;
             }
-            saveToDatabase(userId, postId, type);
-            interactionRedisService.markAsViewed(userId, postId, 1); // khóa lại sau 1 giờ mới tính 1 lượt xem
-            return;
         }
-        // đối với các loại khác
+        // nếu ok lưu vào Database
         saveToDatabase(userId, postId, type);
     }
 
-    // hàm lưu vào database cho gọn
+    // hàm lưu vào database
     private void saveToDatabase(Long userId, Long postId, InteractionType type) {
         var interaction = UserInteraction.builder()
                 .user(User.builder().id(userId).build())
@@ -209,6 +220,13 @@ public class PostService {
         String sub = SecurityContextHolder.getContext().getAuthentication().getName();
         // 2. Chuyển String ID sang Long và tìm User trong DB
         Long userId = Long.parseLong(sub);
+
+        // check redis chống spam đăng tin
+        boolean canPost = postRedisService.checkAndSetPostCooldown(userId, 30);
+        if(!canPost) {
+            throw new AppException(ErrorCode.POST_TOO_FREQUENT);
+        }
+
         User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         // kiểm tra tài khoản có đủ tiền đăng tin không

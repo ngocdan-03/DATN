@@ -1,0 +1,23 @@
+package com.NgocDan.BACKEND.configuration;
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import com.NgocDan.BACKEND.configuration.interceptor.RateLimitInterceptor;
+
+import lombok.RequiredArgsConstructor;
+
+@Configuration
+@RequiredArgsConstructor
+public class WebMvcConfig implements WebMvcConfigurer {
+
+    private final RateLimitInterceptor rateLimitInterceptor;
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        // Áp dụng khiên chắn cho TOÀN BỘ hệ thống (/**)
+        registry.addInterceptor(rateLimitInterceptor)
+                .addPathPatterns("/**");
+    }
+}
