@@ -5,7 +5,6 @@ import jakarta.mail.internet.MimeMessage;
 
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.NgocDan.BACKEND.exception.AppException;
@@ -24,8 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 public class EmailService {
     JavaMailSender mailSender;
 
-    @Async
-    public void sendOtpEmail(OtpEmail otpEmail) { // Truyền đối tượng OtpEmail vào đây
+    public void sendOtpEmail(OtpEmail otpEmail) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");

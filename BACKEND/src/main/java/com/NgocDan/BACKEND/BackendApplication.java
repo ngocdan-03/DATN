@@ -7,9 +7,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import com.NgocDan.BACKEND.configuration.JwtConfig;
 
 @SpringBootApplication
-@EnableConfigurationProperties(JwtConfig.class)
 public class BackendApplication {
-
     public static void main(String[] args) {
         SpringApplication.run(BackendApplication.class, args);
     }

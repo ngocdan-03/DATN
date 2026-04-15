@@ -26,7 +26,7 @@ public class AuthController {
         authService.register(request);
         return ApiResponse.<Void>builder()
                 .code(1000)
-                .message("Đăng ký thành công!")
+                .message("Đăng ký thành công! vui lòng xác thực tài khoản để sử dụng.")
                 .build();
     }
 

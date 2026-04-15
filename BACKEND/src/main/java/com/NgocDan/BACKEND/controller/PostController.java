@@ -54,6 +54,8 @@ public class PostController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "6") int size) {
         return ApiResponse.<PageResponse<PostResponse>>builder()
+                .code(1000)
+                .message("lấy danh sách bài đăng thành công")
                 .result(postService.getFilteredPosts(
                         keyword,
                         wardId,

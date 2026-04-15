@@ -1,5 +1,7 @@
 package com.NgocDan.BACKEND.mapper;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.mapstruct.Mapper;
@@ -32,9 +34,9 @@ public interface PostMapper {
     PostDetailResponse toPostDetailResponse(Post post);
     // Logic xử lý displayDate: Ưu tiên updatedAt -> createdAt
     default String mapDisplayDate(Post post) {
-        java.time.LocalDateTime targetDate = (post.getUpdatedAt() != null) ? post.getUpdatedAt() : post.getCreatedAt();
+        LocalDateTime targetDate = (post.getUpdatedAt() != null) ? post.getUpdatedAt() : post.getCreatedAt();
         if (targetDate == null) return "";
-        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         return targetDate.format(formatter);
     }
 

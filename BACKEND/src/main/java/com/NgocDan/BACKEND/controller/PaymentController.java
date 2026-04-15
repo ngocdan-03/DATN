@@ -49,7 +49,7 @@ public class PaymentController {
 
         // Điều hướng
         String redirectUrl = String.format(
-                "http://localhost:5173/payment/result?status=%s&amount=%s&message=%s",
+                "http://localhost:5173/user/payment-result?status=%s&amount=%s&message=%s",
                 result.getStatus(), result.getAmount(), URLEncoder.encode(result.getMessage(), StandardCharsets.UTF_8));
 
         response.sendRedirect(redirectUrl);
