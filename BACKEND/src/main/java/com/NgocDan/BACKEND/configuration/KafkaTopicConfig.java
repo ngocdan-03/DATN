@@ -23,4 +23,13 @@ public class KafkaTopicConfig {
                 .replicas(1)
                 .build();
     }
+
+    //tương tác của người dùng
+    @Bean
+    public NewTopic userInteractionTopic() {
+        return TopicBuilder.name("user_interaction_topic")
+                .partitions(1)
+                .replicas(1)
+                .build();
+    }
 }

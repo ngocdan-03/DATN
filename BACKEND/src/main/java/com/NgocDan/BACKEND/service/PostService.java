@@ -1,9 +1,12 @@
 package com.NgocDan.BACKEND.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import com.NgocDan.BACKEND.model.kafka.InteractionEvent;
+import com.NgocDan.BACKEND.service.kafka.InteractionKafkaProducer;
 import jakarta.transaction.Transactional;
 
 import org.springframework.data.domain.Page;
@@ -41,6 +44,8 @@ public class PostService {
     InteractionRedisService interactionRedisService;
     PostRedisService postRedisService;
     PostMapper postMapper;
+
+    InteractionKafkaProducer interactionKafkaProducer;
 
     // chi phí đằn tin
     BigDecimal POST_PRICE = new BigDecimal("23003");
@@ -142,19 +147,13 @@ public class PostService {
                 return;
             }
         }
-        // nếu ok lưu vào Database
-        saveToDatabase(userId, postId, type);
-    }
-
-    // hàm lưu vào database
-    private void saveToDatabase(Long userId, Long postId, InteractionType type) {
-        var interaction = UserInteraction.builder()
-                .user(User.builder().id(userId).build())
-                .post(Post.builder().id(postId).build())
+        InteractionEvent event = InteractionEvent.builder()
+                .userId(userId)
+                .postId(postId)
                 .interactionType(type)
+                .timestamp(LocalDateTime.now().toString())
                 .build();
-
-        userInteractionRepository.save(interaction);
+        interactionKafkaProducer.publishInteraction(event);
     }
 
     // lưu bài đăng (tương tác SAVE)
@@ -178,7 +177,6 @@ public class PostService {
             log.info("user:{} da bo luu:{}", userId, postId);
         } else {
             saveNewInteraction(userId, postId, InteractionType.SAVE);
-            log.info("user:{} da luu bai:{}", userId, postId);
         }
     }
 
@@ -194,7 +192,6 @@ public class PostService {
         }
 
         saveNewInteraction(userId, postId, InteractionType.CONTACT);
-        log.info("user:{} da lien he:{}", userId, postId);
     }
 
     // đăng tin

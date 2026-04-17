@@ -26,8 +26,8 @@ public class RateLimitInterceptor implements HandlerInterceptor {
     StringRedisTemplate stringRedisTemplate;
 
     // CẤU HÌNH GLOBAL: Tối đa 5 request / 1 giây cho mỗi IP
-    static int MAX_REQUESTS = 3;
-    static int TIME_WINDOW_SECONDS = 5;
+    static int MAX_REQUESTS = 5;
+    static int TIME_WINDOW_SECONDS = 1;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {

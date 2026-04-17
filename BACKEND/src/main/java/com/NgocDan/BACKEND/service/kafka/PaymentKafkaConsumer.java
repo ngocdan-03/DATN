@@ -26,13 +26,13 @@ public class PaymentKafkaConsumer {
     @KafkaListener(topics = "payment_result_topic", groupId = "real-estate-group")
     @Transactional
     public void listen(PaymentEvent payload) {
-        log.info("💰 [Kafka] Bat dau xu ly thanh toan cho ma giao dich: {}", payload.getVnpTxnRef());
+        log.info("[Kafka] Bat dau xu ly thanh toan cho ma giao dich: {}", payload.getVnpTxnRef());
         try {
             Transaction transaction = transactionRepository.findByVnpTxnRef(payload.getVnpTxnRef()).orElse(null);
 
             // Chỉ cộng tiền nếu trạng thái đang là PENDING (Chống cộng tiền 2 lần)
             if (transaction == null || !TransactionStatus.PENDING.equals(transaction.getStatus())) {
-                log.info("⏩ [Kafka] Giao dich {} da duoc xu ly hoac khong ton tai. Bo qua.", payload.getVnpTxnRef());
+                log.info("[Kafka] Giao dich {} da duoc xu ly hoac khong ton tai. Bo qua.", payload.getVnpTxnRef());
                 return;
             }
 
@@ -46,17 +46,17 @@ public class PaymentKafkaConsumer {
                 user.setBalance(user.getBalance().add(payload.getAmount()));
                 userRepository.save(user);
 
-                log.info("✅ [Kafka] Da cong {} VND cho user ID: {}", payload.getAmount(), user.getId());
+                log.info("[Kafka] Da cong {} VND cho user ID: {}", payload.getAmount(), user.getId());
             } else {
                 // Nếu thanh toán thất bại
                 transaction.setStatus(TransactionStatus.FAILED);
-                log.error("❌ [Kafka] Giao dich {} that bai/huy bo.", payload.getVnpTxnRef());
+                log.error("[Kafka] Giao dich {} that bai/huy bo.", payload.getVnpTxnRef());
             }
             // Lưu trạng thái giao dịch
             transactionRepository.save(transaction);
 
         } catch (Exception e) {
-            log.error("❌ [Kafka] Loi nghiem trong khi xu ly thanh toan ma {}: {}", payload.getVnpTxnRef(), e.getMessage());
+            log.error("[Kafka] Loi nghiem trong khi xu ly thanh toan ma {}: {}", payload.getVnpTxnRef(), e.getMessage());
         }
     }
 }

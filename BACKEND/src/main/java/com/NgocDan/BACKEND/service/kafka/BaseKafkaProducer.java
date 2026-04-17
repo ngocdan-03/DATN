@@ -15,9 +15,9 @@ public abstract class BaseKafkaProducer<T> {
     protected void send(String topic, T payload) {
         kafkaTemplate.send(topic, payload).whenComplete((result, ex) -> {
             if (ex == null) {
-                log.info("🚀 [Kafka] Gui thanh cong vao {}: {}", topic, payload.getClass().getSimpleName());
+                log.info("[Kafka] Gui thanh cong vao {}: {}", topic, payload.getClass().getSimpleName());
             } else {
-                log.error("❌ [Kafka] Loi gui vao {}: {}", topic, ex.getMessage());
+                log.error("[Kafka] Loi gui vao {}: {}", topic, ex.getMessage());
             }
         });
     }

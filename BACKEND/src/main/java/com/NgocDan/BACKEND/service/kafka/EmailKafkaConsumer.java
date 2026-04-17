@@ -19,11 +19,11 @@ public class EmailKafkaConsumer {
 
     @KafkaListener(topics = "otp_email_topic", groupId = "real-estate-group")
     public void listen(OtpEmail payload) {
-        log.info("📬 [Kafka] Nhan yeu cau gui mail OTP cho: {}", payload.getEmail());
+        log.info("[Kafka] Nhan yeu cau gui mail OTP cho: {}", payload.getEmail());
         try {
             emailService.sendOtpEmail(payload);
         } catch (Exception e) {
-            log.error("❌ [Kafka] Loi khi gui mail: {}", e.getMessage());
+            log.error("[Kafka] Loi khi gui mail: {}", e.getMessage());
         }
     }
 }
