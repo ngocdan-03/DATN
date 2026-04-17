@@ -26,8 +26,8 @@ public class RateLimitInterceptor implements HandlerInterceptor {
     StringRedisTemplate stringRedisTemplate;
 
     // CẤU HÌNH GLOBAL: Tối đa 5 request / 1 giây cho mỗi IP
-    static int MAX_REQUESTS = 5;
-    static int TIME_WINDOW_SECONDS = 1;
+    static int MAX_REQUESTS = 3;
+    static int TIME_WINDOW_SECONDS = 5;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
@@ -46,7 +46,7 @@ public class RateLimitInterceptor implements HandlerInterceptor {
 
         // Nếu quá giới hạn -> Chặn đứng
         if (currentRequests != null && currentRequests > MAX_REQUESTS) {
-            log.warn("IP {} thao tác quá nhanh (Spam). Đã block!", clientIp);
+            log.warn("IP {} thao tác quá nhanh (Spam). da block!", clientIp);
             throw new AppException(ErrorCode.TOO_MANY_REQUESTS);
         }
 

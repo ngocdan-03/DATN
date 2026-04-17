@@ -75,7 +75,7 @@ public class AuthService {
                 .roles(new HashSet<>(java.util.List.of(role)))
                 .build();
         userRepository.save(user);
-        sendOtp(user.getEmail(), "verify");
+//        sendOtp(user.getEmail(), "verify");
     }
 
     // 2. Đăng nhập
@@ -279,7 +279,7 @@ public class AuthService {
     }
 
     // 11. Tạo Access Token
-    public String generateAT(User user, String jti, String familyId) {
+    private String generateAT(User user, String jti, String familyId) {
         Instant now = Instant.now();
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .subject(user.getId().toString())
@@ -294,7 +294,7 @@ public class AuthService {
     }
 
     // 12. Tạo Refresh Token
-    public String generateRT(User user, String jti, String familyId, long fixedExp) {
+    private String generateRT(User user, String jti, String familyId, long fixedExp) {
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
                 .subject(user.getId().toString())
                 .issueTime(new Date())
@@ -307,7 +307,7 @@ public class AuthService {
     }
 
     // 13. Xây dựng Scope (Phân quyền)
-    public String buildScope(User user) {
+    private String buildScope(User user) {
         StringJoiner sj = new StringJoiner(" ");
         if (!CollectionUtils.isEmpty(user.getRoles())) {
             user.getRoles().forEach(role -> {
