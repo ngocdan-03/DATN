@@ -6,6 +6,8 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import com.NgocDan.BACKEND.model.kafka.PaymentEvent;
+import com.NgocDan.BACKEND.service.kafka.PaymentKafkaProducer;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -51,6 +53,8 @@ public class VNPayService {
 
     final TransactionRepository transactionRepository;
     final UserRepository userRepository;
+
+    final PaymentKafkaProducer paymentKafkaProducer;
 
     // tạo URL thanh toán VNPay
     @Transactional
@@ -137,7 +141,13 @@ public class VNPayService {
 
         // cập nhất nếu chưa xử lý boiwr ipn
         if (TransactionStatus.PENDING.equals(transaction.getStatus())) {
-            updateTransactionData(transaction, queryParams);
+            PaymentEvent event = PaymentEvent.builder()
+                    .vnpTxnRef(vnp_TxnRef)
+                    .vnpTransactionNo(queryParams.get("vnp_TransactionNo"))
+                    .responseCode(responseCode)
+                    .amount(transaction.getAmount())
+                    .build();
+            paymentKafkaProducer.publishPaymentResult(event);
         }
         return PaymentCallbackResponse.builder()
                 .status("00".equals(responseCode) ? "Success" : "Failed")
@@ -177,30 +187,18 @@ public class VNPayService {
         }
 
         // cập nhật transaction và cộng tiền
-        updateTransactionData(transaction, queryParams);
+        PaymentEvent event = PaymentEvent.builder()
+                .vnpTxnRef(vnp_TxnRef)
+                .vnpTransactionNo(queryParams.get("vnp_TransactionNo"))
+                .responseCode(queryParams.get("vnp_ResponseCode"))
+                .amount(transaction.getAmount())
+                .build();
+        paymentKafkaProducer.publishPaymentResult(event);
 
         return Map.of("RspCode", "00", "Message", "Confirm Success");
     }
 
     // hàm bổ trợ dùng chung
-    // hàm update transaction status và balance user
-    private void updateTransactionData(Transaction transaction, Map<String, String> queryParams) {
-        String responseCode = queryParams.get("vnp_ResponseCode");
-
-        if ("00".equals(responseCode)) {
-            transaction.setStatus(TransactionStatus.SUCCESS);
-            transaction.setVnpTransactionNo(queryParams.get("vnp_TransactionNo"));
-
-            // Cộng tiền vào tài khoản user
-            User user = transaction.getUser();
-            user.setBalance(user.getBalance().add(transaction.getAmount()));
-            userRepository.save(user);
-        } else {
-            transaction.setStatus(TransactionStatus.FAILED);
-        }
-        transactionRepository.save(transaction);
-    }
-
     // hàm verify chữ kí
     private boolean verifySignature(Map<String, String> queryParams) {
         String vnp_SecureHash = queryParams.get("vnp_SecureHash");

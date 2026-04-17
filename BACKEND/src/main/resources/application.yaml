@@ -3,6 +3,8 @@ server:
   servlet:
     context-path: /real-estate
 spring:
+  kafka:
+    bootstrap-servers: localhost:9092
   datasource:
     url: jdbc:mysql://localhost:3306/real_estate_db
     username: root

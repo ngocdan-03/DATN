@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
+import com.NgocDan.BACKEND.service.kafka.EmailKafkaProducer;
 import jakarta.transaction.Transactional;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -55,6 +56,7 @@ public class AuthService {
     UserMapper userMapper;
 
     EmailService emailService;
+    EmailKafkaProducer emailKafkaProducer;
 
     SecureRandom secureRandom = new SecureRandom();
 
@@ -193,7 +195,8 @@ public class AuthService {
                 OtpEmail.builder().email(email).otp(otp).purpose(purpose).build();
 
         otpRedisService.save(otpEmail, 180L);
-        emailService.sendOtpEmail(otpEmail);
+//        emailService.sendOtpEmail(otpEmail);
+        emailKafkaProducer.publishOtp(otpEmail);
     }
 
     // 6. Xác thực tài khoản

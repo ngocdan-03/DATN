@@ -25,7 +25,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PostController {
     PostService postService;
-    
+
     // get với bộ lọc
     @GetMapping("/search")
     public ApiResponse<PageResponse<PostResponse>> search(
