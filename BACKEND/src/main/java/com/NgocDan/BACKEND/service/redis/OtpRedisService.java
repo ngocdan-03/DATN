@@ -36,8 +36,7 @@ public class OtpRedisService {
         String key = "otp:cooldown:" + purpose + ":" + email;
 
         // setIfAbsent: Nếu chưa có key thì tạo key với TTL và trả về true. Nếu đã có thì trả về false.
-        Boolean success = redisTemplate.opsForValue()
-                .setIfAbsent(key, "locked", Duration.ofSeconds(seconds));
+        Boolean success = redisTemplate.opsForValue().setIfAbsent(key, "locked", Duration.ofSeconds(seconds));
 
         return Boolean.TRUE.equals(success);
     }

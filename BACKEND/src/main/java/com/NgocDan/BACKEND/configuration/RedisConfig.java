@@ -1,24 +1,18 @@
 package com.NgocDan.BACKEND.configuration;
 
-import java.time.Duration;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
-import org.springframework.data.redis.connection.stream.*;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import org.springframework.data.redis.stream.StreamMessageListenerContainer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
-import com.NgocDan.BACKEND.service.redis.EmailStreamConsumer;
 
 @Configuration
 public class RedisConfig {
@@ -31,9 +25,6 @@ public class RedisConfig {
 
     @Value("${spring.data.redis.database}")
     private int redisDatabase;
-
-    public static final String EMAIL_STREAM_KEY = "otp_email_stream";
-    public static final String EMAIL_CONSUMER_GROUP = "otp_email_group";
 
     @Bean
     public LettuceConnectionFactory redisConnectionFactory() {
@@ -60,28 +51,5 @@ public class RedisConfig {
         template.setHashValueSerializer(serializer);
 
         return template;
-    }
-
-    // cho redis queue stream
-    @Bean
-    public StreamMessageListenerContainer<String, MapRecord<String, String, String>> streamMessageListenerContainer(
-            RedisConnectionFactory connectionFactory,
-            EmailStreamConsumer emailStreamConsumer) {
-
-        StreamMessageListenerContainer.StreamMessageListenerContainerOptions<String, MapRecord<String, String, String>>
-                options = StreamMessageListenerContainer.StreamMessageListenerContainerOptions.builder()
-                .pollTimeout(Duration.ofSeconds(1))
-                .build();
-
-        StreamMessageListenerContainer<String, MapRecord<String, String, String>> container =
-                StreamMessageListenerContainer.create(connectionFactory, options);
-
-        container.receive(
-                Consumer.from(EMAIL_CONSUMER_GROUP, "worker-1"),
-                StreamOffset.create(EMAIL_STREAM_KEY, ReadOffset.lastConsumed()),
-                emailStreamConsumer);
-
-        container.start();
-        return container;
     }
 }

@@ -20,11 +20,6 @@ import io.lettuce.core.dynamic.annotation.Param;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
-
-    @Query("SELECT p FROM Post p JOIN FETCH p.ward w " + "WHERE p.status = :status "
-            + "ORDER BY COALESCE(p.updatedAt, p.createdAt) DESC")
-    Page<Post> findAllCustom(@Param("status") PostStatus status, Pageable pageable);
-
     // get theo bộ lọc
     @Query("SELECT p FROM Post p JOIN FETCH p.ward w " + "WHERE p.status = :status "
             + "AND (:keyword IS NULL OR p.title LIKE %:keyword%) "

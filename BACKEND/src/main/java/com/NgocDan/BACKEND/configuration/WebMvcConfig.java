@@ -16,8 +16,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        // Áp dụng khiên chắn cho TOÀN BỘ hệ thống (/**)
-        registry.addInterceptor(rateLimitInterceptor)
-                .addPathPatterns("/**");
+        registry.addInterceptor(rateLimitInterceptor).addPathPatterns("/**");
     }
 }

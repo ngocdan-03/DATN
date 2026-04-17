@@ -19,8 +19,7 @@ public class PostRedisService {
     public boolean checkAndSetPostCooldown(Long userId, long seconds) {
         String key = "post:cooldown:" + userId;
 
-        Boolean success = redisTemplate.opsForValue()
-                .setIfAbsent(key, "locked", Duration.ofSeconds(seconds));
+        Boolean success = redisTemplate.opsForValue().setIfAbsent(key, "locked", Duration.ofSeconds(seconds));
 
         return Boolean.TRUE.equals(success);
     }

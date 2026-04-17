@@ -30,7 +30,6 @@ import com.NgocDan.BACKEND.model.redis.OtpEmail;
 import com.NgocDan.BACKEND.model.redis.RefreshToken;
 import com.NgocDan.BACKEND.repository.RoleRepository;
 import com.NgocDan.BACKEND.repository.UserRepository;
-import com.NgocDan.BACKEND.service.redis.EmailStreamProducer;
 import com.NgocDan.BACKEND.service.redis.InvalidatedTokenRedisService;
 import com.NgocDan.BACKEND.service.redis.OtpRedisService;
 import com.NgocDan.BACKEND.service.redis.RefreshTokenRedisService;
@@ -55,7 +54,7 @@ public class AuthService {
     OtpRedisService otpRedisService;
     UserMapper userMapper;
 
-    EmailStreamProducer emailStreamProducer;
+    EmailService emailService;
 
     SecureRandom secureRandom = new SecureRandom();
 
@@ -75,7 +74,7 @@ public class AuthService {
                 .roles(new HashSet<>(java.util.List.of(role)))
                 .build();
         userRepository.save(user);
-//        sendOtp(user.getEmail(), "verify");
+        //        sendOtp(user.getEmail(), "verify");
     }
 
     // 2. Đăng nhập
@@ -190,15 +189,11 @@ public class AuthService {
         userRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         String otp = String.format("%06d", secureRandom.nextInt(1000000));
-        OtpEmail otpEmail = OtpEmail.builder()
-                .email(email)
-                .otp(otp)
-                .purpose(purpose)
-                .build();
+        OtpEmail otpEmail =
+                OtpEmail.builder().email(email).otp(otp).purpose(purpose).build();
 
         otpRedisService.save(otpEmail, 180L);
-
-        emailStreamProducer.publishOtpEmail(otpEmail);
+        emailService.sendOtpEmail(otpEmail);
     }
 
     // 6. Xác thực tài khoản

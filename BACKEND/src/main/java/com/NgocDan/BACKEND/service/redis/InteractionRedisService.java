@@ -23,8 +23,7 @@ public class InteractionRedisService {
     public boolean isAllowedToInteract(Long userId, Long postId, String interactionType, long hours) {
         String key = getInteractionKey(userId, postId, interactionType);
 
-        Boolean success = redisTemplate.opsForValue()
-                .setIfAbsent(key, "locked", Duration.ofHours(hours));
+        Boolean success = redisTemplate.opsForValue().setIfAbsent(key, "locked", Duration.ofHours(hours));
 
         return Boolean.TRUE.equals(success);
     }

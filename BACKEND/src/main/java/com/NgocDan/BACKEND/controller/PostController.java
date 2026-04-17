@@ -25,18 +25,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PostController {
     PostService postService;
-
-    @GetMapping("/all")
-    public ApiResponse<PageResponse<PostResponse>> getAll(
-            @RequestParam(value = "page", defaultValue = "1") int page,
-            @RequestParam(value = "size", defaultValue = "6") int size) {
-        return ApiResponse.<PageResponse<PostResponse>>builder()
-                .code(1000)
-                .message("Lấy danh sách bài viết thành công!")
-                .result(postService.getAllPosts(page, size))
-                .build();
-    }
-
+    
     // get với bộ lọc
     @GetMapping("/search")
     public ApiResponse<PageResponse<PostResponse>> search(

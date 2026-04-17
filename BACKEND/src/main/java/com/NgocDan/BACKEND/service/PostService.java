@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-import com.NgocDan.BACKEND.service.redis.PostRedisService;
 import jakarta.transaction.Transactional;
 
 import org.springframework.data.domain.Page;
@@ -22,6 +21,7 @@ import com.NgocDan.BACKEND.mapper.PostMapper;
 import com.NgocDan.BACKEND.model.*;
 import com.NgocDan.BACKEND.repository.*;
 import com.NgocDan.BACKEND.service.redis.InteractionRedisService;
+import com.NgocDan.BACKEND.service.redis.PostRedisService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -44,22 +44,6 @@ public class PostService {
 
     // chi phí đằn tin
     BigDecimal POST_PRICE = new BigDecimal("23003");
-
-    public PageResponse<PostResponse> getAllPosts(int page, int size) {
-        // Phân trang đơn giản
-        Pageable pageable = PageRequest.of(page - 1, size);
-
-        // Truyền trạng thái APPROVED từ Service xuống Repository
-        Page<Post> pageData = postRepository.findAllCustom(PostStatus.APPROVED, pageable);
-
-        return PageResponse.<PostResponse>builder()
-                .currentPage(page)
-                .totalPages(pageData.getTotalPages())
-                .totalElements(pageData.getTotalElements())
-                .pageSize(pageData.getSize())
-                .data(postMapper.toPostResponseList(pageData.getContent()))
-                .build();
-    }
 
     // get có bộ lọc
     public PageResponse<PostResponse> getFilteredPosts(
@@ -140,18 +124,18 @@ public class PostService {
 
     // thêm tương tác (dùng chung cho cả VIEW, SAVE, CONTACT)
     private void saveNewInteraction(Long userId, Long postId, InteractionType type) {
-        //Cấu hình thời gian khóa (tính bằng Giờ) cho từng loại hành động
-        long cooldownHours = switch (type) {
-            case VIEW -> 1;
-            case CONTACT -> 12;
-            case SAVE -> 24;
-        };
+        // Cấu hình thời gian khóa (tính bằng Giờ) cho từng loại hành động
+        long cooldownHours =
+                switch (type) {
+                    case VIEW -> 1;
+                    case CONTACT -> 12;
+                    case SAVE -> 24;
+                };
 
         // Kiểm tra với Redis
         if (cooldownHours > 0) {
-            boolean canInteract = interactionRedisService.isAllowedToInteract(
-                    userId, postId, type.name(), cooldownHours
-            );
+            boolean canInteract =
+                    interactionRedisService.isAllowedToInteract(userId, postId, type.name(), cooldownHours);
 
             if (!canInteract) {
                 log.info("Hanh dong {} cua user {} vao post {} bi chan do spam.", type, userId, postId);
@@ -223,7 +207,7 @@ public class PostService {
 
         // check redis chống spam đăng tin
         boolean canPost = postRedisService.checkAndSetPostCooldown(userId, 30);
-        if(!canPost) {
+        if (!canPost) {
             throw new AppException(ErrorCode.POST_TOO_FREQUENT);
         }
 
