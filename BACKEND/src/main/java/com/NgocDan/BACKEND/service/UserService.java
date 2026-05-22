@@ -16,6 +16,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
@@ -24,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 public class UserService {
     UserRepository userRepository;
     UserMapper userMapper;
+    CloudinaryService cloudinaryService;
     PasswordEncoder passwordEncoder;
 
     public UserDashboardResponse getMyInfo() {
@@ -37,6 +39,27 @@ public class UserService {
     }
 
     // update
+    // upload avatar
+    public String uploadAvatar(MultipartFile file) {
+        // lấy id từ Security Context
+        String sub = SecurityContextHolder.getContext().getAuthentication().getName();
+        Long userId = Long.parseLong(sub);
+
+        // lấy user
+        var user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        // Xóa avatar cũ trên Cloudinary nếu có
+        if (user.getAvatarUrl() != null && !user.getAvatarUrl().contains("default.jpg")) {
+            cloudinaryService.deleteFileByUrl(user.getAvatarUrl());
+        }
+        // Upload ảnh mới
+        String newUrl = cloudinaryService.uploadFile(file, "users");
+        // Cập nhật URL mới vào user và lưu
+        user.setAvatarUrl(newUrl);
+        userRepository.save(user);
+        return newUrl;
+    }
+
     public UserDashboardResponse updateMyInfo(UserUpdateRequest request) {
         // lấy id từ Security Context
         String sub = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -64,11 +87,6 @@ public class UserService {
         Long userId = Long.parseLong(sub);
         // lấy user
         var user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-
-        // kiểm tra maatj khẩu mới và xác nhận mật khẩu có giống nhau không
-        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            throw new AppException(ErrorCode.CONFIRM_PASSWORD_NOT_MATCH);
-        }
 
         // Kiểm tra mật khẩu cũ có đúng không
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {

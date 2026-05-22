@@ -1,9 +1,12 @@
 package com.NgocDan.BACKEND.controller;
 
 import java.math.BigDecimal;
+import java.util.List;
 
+import com.NgocDan.BACKEND.dto.request.PostUpdateRequest;
 import jakarta.validation.Valid;
 
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +21,7 @@ import com.NgocDan.BACKEND.service.PostService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/posts")
@@ -95,12 +99,15 @@ public class PostController {
     }
 
     // đăng tin mới
-    @PostMapping("/create")
+    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('CREATE_POST')")
-    public ApiResponse<Void> createPost(@RequestBody @Valid PostCreateRequest request) {
+    public ApiResponse<Void> createPost(
+            @RequestPart("data") @Valid PostCreateRequest request,
+            @RequestPart("thumbnail") MultipartFile thumbnailFile,
+            @RequestPart("images") List<MultipartFile> imageFiles) {
 
         // Gọi Service xử lý logic (Lấy UserId từ Token, Tìm Ward, Lưu Post & Images)
-        postService.createPost(request);
+        postService.createPost(request, thumbnailFile, imageFiles);
 
         // Trả về code 1000 mặc định (Thành công)
         return ApiResponse.<Void>builder()
@@ -144,6 +151,37 @@ public class PostController {
                 .code(1000)
                 .message("Lấy danh sách bài đăng đã lưu thành công!")
                 .result(postService.getSavedPosts(keyword, page, size))
+                .build();
+    }
+
+    // update post
+
+    // lấy chi tiết để update
+    @GetMapping("/my-posts/{postId}/edit-details")
+    @PreAuthorize("hasAuthority('UPDATE_MY_POST')")
+    public ApiResponse<PostEditResponse> getPostDetailsForEdit(@PathVariable Long postId) {
+        return ApiResponse.<PostEditResponse>builder()
+                .code(1000)
+                .message("Lấy dữ liệu chỉnh sửa bài đăng thành công!")
+                .result(postService.getPostForEdit(postId))
+                .build();
+    }
+
+    // cập nhật bài đăng
+    @PutMapping(value = "/my-posts/{postId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAuthority('UPDATE_MY_POST')")
+    public ApiResponse<Void> updatePost(
+            @PathVariable Long postId,
+            @RequestPart("data") @Valid PostUpdateRequest request,
+            @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnailFile,
+            @RequestPart(value = "images", required = false) List<MultipartFile> imageFiles,
+            @RequestParam(value = "imageUrls", required = false) List<String> imageUrls) { // ✅ dùng @RequestParam
+
+        postService.updatePost(postId, request, thumbnailFile, imageFiles, imageUrls);
+
+        return ApiResponse.<Void>builder()
+                .code(1000)
+                .message("Cập nhật bài đăng thành công, vui lòng chờ admin duyệt lại!")
                 .build();
     }
 }

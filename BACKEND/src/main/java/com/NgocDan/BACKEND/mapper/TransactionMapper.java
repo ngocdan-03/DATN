@@ -2,7 +2,9 @@ package com.NgocDan.BACKEND.mapper;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
+import com.NgocDan.BACKEND.dto.response.AdminTransactionResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -18,6 +20,8 @@ public interface TransactionMapper {
     @Mapping(target = "isPost", source = "post", qualifiedByName = "checkIsPost")
     TransactionResponse toTransactionResponse(Transaction transaction);
 
+    List<TransactionResponse> toTransactionResponseList(List<Transaction> transactions);
+
     // này máp để xem chi tiết
     @Mapping(target = "transactionDate", source = "createdAt", qualifiedByName = "formatDate")
     @Mapping(target = "customerName", source = "user.fullName")
@@ -27,6 +31,15 @@ public interface TransactionMapper {
     @Mapping(target = "postTitle", source = "post.title")
     @Mapping(target = "invoiceNo", source = "id", qualifiedByName = "generateInvoiceNo")
     TransactionDetailResponse toDetailResponse(Transaction transaction);
+
+    // cho admin
+    @Mapping(target = "ownerName", source = "user.fullName")
+    @Mapping(target = "ownerEmail", source = "user.email")
+    @Mapping(target = "createdAt", source = "createdAt", qualifiedByName = "formatDate")
+    @Mapping(target = "isPost", source = "post", qualifiedByName = "checkIsPost")
+    AdminTransactionResponse toAdminTransactionResponse(Transaction transaction);
+
+    List<AdminTransactionResponse> toAdminTransactionResponseList(List<Transaction> transactions);
 
     @Named("formatDate")
     default String formatDate(LocalDateTime createdAt) {
@@ -44,4 +57,5 @@ public interface TransactionMapper {
         if (id == null) return null;
         return "INV-" + String.format("%06d", id); // Tạo mã dạng INV-000102
     }
+
 }

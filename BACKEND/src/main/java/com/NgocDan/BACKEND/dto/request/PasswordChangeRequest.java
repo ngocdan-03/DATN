@@ -14,12 +14,10 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PasswordChangeRequest {
     @NotBlank(message = "PASSWORD_REQUIRED")
+    @PasswordConstraint
     String oldPassword;
 
     @NotBlank(message = "PASSWORD_REQUIRED")
     @PasswordConstraint
     String newPassword;
-
-    @NotBlank(message = "PASSWORD_REQUIRED")
-    String confirmPassword;
 }

@@ -35,9 +35,9 @@ public class PostCreateRequest {
     @NotBlank(message = "ADDRESS_REQUIRED")
     String streetAddress;
 
-    @NotBlank(message = "THUMBNAIL_REQUIRED")
-    @UrlConstraint
-    String thumbnailUrl;
+//    @NotBlank(message = "THUMBNAIL_REQUIRED")
+//    @UrlConstraint
+//    String thumbnailUrl;
 
     @NotNull(message = "PRICE_REQUIRED")
     @DecimalMin(value = "10000000", message = "PRICE_TOO_LOW") // Ví dụ: giá tối thiểu 10.000.000 vnđ
@@ -64,7 +64,7 @@ public class PostCreateRequest {
     @NotNull(message = "WARD_ID_REQUIRED")
     Integer wardId;
 
-    @NotNull(message = "IMAGES_REQUIRED")
-    @Size(min = 1, message = "AT_LEAST_ONE_IMAGE") // Phải có ít nhất 1 ảnh chi tiết
-    List<String> imageUrls;
+//    @NotNull(message = "IMAGES_REQUIRED")
+//    @Size(min = 1, message = "AT_LEAST_ONE_IMAGE") // Phải có ít nhất 1 ảnh chi tiết
+//    List<String> imageUrls;
 }

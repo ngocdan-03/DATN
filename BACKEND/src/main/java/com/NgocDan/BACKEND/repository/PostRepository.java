@@ -50,6 +50,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             Pageable pageable);
 
     long countByUserIdAndStatus(Long userId, PostStatus status);
+    long countByUserId(Long userId);
 
     @Query("SELECT p.status, COUNT(p) FROM Post p WHERE p.user.id = :userId GROUP BY p.status")
     List<Object[]> countStatusDistribution(@Param("userId") Long userId);
@@ -86,4 +87,29 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "ORDER BY ui_save.createdAt DESC")
     Page<PostDashboardResponse> findSavedPostsDashboardByUserId(
             @Param("userId") Long userId, @Param("keyword") String keyword, Pageable pageable);
+
+    // admin
+    // Đếm bài đăng theo status
+    long countByStatus(PostStatus status);
+
+    // Tổng số bài (trừ DELETED)
+    @Query("SELECT COUNT(p) FROM Post p WHERE p.status != com.NgocDan.BACKEND.enums.PostStatus.DELETED")
+    long countActivePosts();
+
+    // lấy all bài post cho admin
+    @Query("SELECT p FROM Post p JOIN FETCH p.ward w JOIN FETCH p.user u " +
+            "WHERE (:status IS NULL OR p.status = :status) " +
+            "AND (:wardId IS NULL OR p.ward.id = :wardId) " +
+            "AND (:propertyType IS NULL OR p.propertyType = :propertyType) " +
+            "AND (:listingType IS NULL OR p.listingType = :listingType) " +
+            "AND (:keyword IS NULL OR LOWER(p.title) LIKE LOWER(CONCAT('%',:keyword,'%')) " +
+            "     OR LOWER(u.fullName) LIKE LOWER(CONCAT('%',:keyword,'%'))) " +
+            "ORDER BY p.createdAt DESC")
+    Page<Post> findAllForAdmin(
+            @Param("status") PostStatus status,
+            @Param("wardId") Integer wardId,
+            @Param("propertyType") PropertyType propertyType,
+            @Param("listingType") ListingType listingType,
+            @Param("keyword") String keyword,
+            Pageable pageable);
 }

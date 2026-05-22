@@ -2,6 +2,7 @@ package com.NgocDan.BACKEND.controller;
 
 import jakarta.validation.Valid;
 
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +15,7 @@ import com.NgocDan.BACKEND.service.UserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/users")
@@ -32,6 +34,18 @@ public class UserController {
                 .build();
     }
 
+    // update
+    // update avatar
+    @PostMapping(value = "/upload-avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAuthority('UPDATE_MY_INFO')")
+    public ApiResponse<String> uploadAvatar(@RequestParam("file") MultipartFile file) {
+        return ApiResponse.<String>builder()
+                .code(1000)
+                .message("Cập nhật ảnh đại diện thành công!")
+                .result(userService.uploadAvatar(file))
+                .build();
+    }
+    // update thông tin cá nhân (không bao gồm avatar)
     @PutMapping("/update-myInfo")
     @PreAuthorize("hasAuthority('UPDATE_MY_INFO')")
     public ApiResponse<UserDashboardResponse> updateInfo(@RequestBody @Valid UserUpdateRequest request) {

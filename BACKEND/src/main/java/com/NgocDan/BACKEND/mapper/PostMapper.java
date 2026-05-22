@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import com.NgocDan.BACKEND.dto.request.PostUpdateRequest;
+import com.NgocDan.BACKEND.dto.response.AdminPostResponse;
+import com.NgocDan.BACKEND.dto.response.PostEditResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -11,6 +14,7 @@ import com.NgocDan.BACKEND.dto.request.PostCreateRequest;
 import com.NgocDan.BACKEND.dto.response.PostDetailResponse;
 import com.NgocDan.BACKEND.dto.response.PostResponse;
 import com.NgocDan.BACKEND.model.Post;
+import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface PostMapper {
@@ -46,5 +50,34 @@ public interface PostMapper {
     @Mapping(target = "ward", ignore = true)
     @Mapping(target = "images", ignore = true)
     @Mapping(target = "status", ignore = true)
+    @Mapping(target = "thumbnailUrl", ignore = true)
     Post toPost(PostCreateRequest request);
+
+    // cho edit
+    @Mapping(target = "wardId", source = "ward.id")
+    @Mapping(target = "imageUrls", expression = "java(mapPostImagesToStrings(post))")
+    PostEditResponse toPostEditResponse(Post post);
+    default List<String> mapPostImagesToStrings(Post post) {
+        if (post.getImages() == null) return null;
+        return post.getImages().stream()
+                .map(img -> img.getImageUrl())
+                .toList();
+    }
+
+    // cho update
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "user", ignore = true)
+    @Mapping(target = "ward", ignore = true)
+    @Mapping(target = "images", ignore = true)
+    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "thumbnailUrl", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    void updatePost(@MappingTarget Post post, PostUpdateRequest request);
+
+    // map cho admin lấy danh sách post
+    @Mapping(target = "wardName", source = "ward.name")
+    AdminPostResponse toAdminPostResponse(Post post);
+
+    List<AdminPostResponse> toAdminPostResponseList(List<Post> posts);
 }

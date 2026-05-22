@@ -3,17 +3,14 @@ package com.NgocDan.BACKEND.dto.response;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.math.BigDecimal;
+
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class NewsResponse {
-    Long id;
-    String title;
-    String thumbnailUrl;
-    String category;
-    String sourceName;
-
-    String displayDate;
+public class MonthlyRevenueResponse {
+    int month;
+    BigDecimal revenue;
 }

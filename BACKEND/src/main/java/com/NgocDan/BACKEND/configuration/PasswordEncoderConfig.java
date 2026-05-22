@@ -10,7 +10,7 @@ public class PasswordEncoderConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        // Độ mạnh (strength) là 10 là mức chuẩn hiện nay
+        // Độ mạnh (strength) là 10.
         return new BCryptPasswordEncoder(10);
     }
 }

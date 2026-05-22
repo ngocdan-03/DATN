@@ -33,7 +33,4 @@ public class UserUpdateRequest {
     @Past(message = "BIRTHDAY_INVALID")
     @JsonFormat(pattern = "dd-MM-yyyy")
     LocalDate birthday;
-
-    @UrlConstraint
-    String avatarUrl;
 }

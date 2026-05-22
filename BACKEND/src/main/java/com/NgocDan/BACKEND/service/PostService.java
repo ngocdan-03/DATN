@@ -2,9 +2,11 @@ package com.NgocDan.BACKEND.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.NgocDan.BACKEND.dto.request.PostUpdateRequest;
 import com.NgocDan.BACKEND.model.kafka.InteractionEvent;
 import com.NgocDan.BACKEND.service.kafka.InteractionKafkaProducer;
 import jakarta.transaction.Transactional;
@@ -30,6 +32,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
@@ -43,6 +46,7 @@ public class PostService {
     UserRepository userRepository;
     InteractionRedisService interactionRedisService;
     PostRedisService postRedisService;
+    CloudinaryService cloudinaryService;
     PostMapper postMapper;
 
     InteractionKafkaProducer interactionKafkaProducer;
@@ -129,21 +133,12 @@ public class PostService {
 
     // thêm tương tác (dùng chung cho cả VIEW, SAVE, CONTACT)
     private void saveNewInteraction(Long userId, Long postId, InteractionType type) {
-        // Cấu hình thời gian khóa (tính bằng Giờ) cho từng loại hành động
-        long cooldownHours =
-                switch (type) {
-                    case VIEW -> 1;
-                    case CONTACT -> 12;
-                    case SAVE -> 24;
-                };
-
-        // Kiểm tra với Redis
-        if (cooldownHours > 0) {
-            boolean canInteract =
-                    interactionRedisService.isAllowedToInteract(userId, postId, type.name(), cooldownHours);
+        // Nếu là VIEW thì kiểm tra chống spam trước khi lưu
+        if (type == InteractionType.VIEW) {
+            boolean canInteract = interactionRedisService.isAllowedToInteract(userId, postId, type.name(), 1);
 
             if (!canInteract) {
-                log.info("Hanh dong {} cua user {} vao post {} bi chan do spam.", type, userId, postId);
+                log.info("Hanh dong VIEW cua user {} vao post {} bi chan do spam.", userId, postId);
                 return;
             }
         }
@@ -196,7 +191,7 @@ public class PostService {
 
     // đăng tin
     @Transactional
-    public void createPost(PostCreateRequest request) {
+    public void createPost(PostCreateRequest request, MultipartFile thumbnailFile, List<MultipartFile> imageFiles) {
         // 1. Lấy String ID từ SecurityContext (Token subject)
         String sub = SecurityContextHolder.getContext().getAuthentication().getName();
         // 2. Chuyển String ID sang Long và tìm User trong DB
@@ -223,24 +218,25 @@ public class PostService {
                 .findById(request.getWardId())
                 .orElseThrow(() -> new AppException(ErrorCode.WARD_NOT_FOUND));
 
-        // 4. Map dữ liệu từ DTO sang Entity Post
-        Post post = postMapper.toPost(request);
-
-        // 5. Thiết lập các thông tin quan hệ và trạng thái
+        // up ảnh lên Cloudinary
+        String thumbnailUrl = cloudinaryService.uploadFile(thumbnailFile,"posts");
+        List<String> uploadedGalleryUrls = imageFiles.parallelStream()
+                .map(file -> cloudinaryService.uploadFile(file,"posts"))
+                .toList();
+        // map và lưu bài đăng
+         Post post = postMapper.toPost(request);
         post.setUser(user);
         post.setWard(ward);
-        post.setStatus(PostStatus.PENDING); // Tin mới luôn ở trạng thái chờ duyệt
+        post.setThumbnailUrl(thumbnailUrl);
+        post.setStatus(PostStatus.PENDING);
 
-        // 6. Xử lý danh sách ảnh chi tiết (PostImage)
-        // Nhờ có CascadeType.ALL, danh sách này sẽ tự động được lưu vào bảng post_images
-        if (request.getImageUrls() != null && !request.getImageUrls().isEmpty()) {
-            List<PostImage> postImages = request.getImageUrls().stream()
+        if(!uploadedGalleryUrls.isEmpty()) {
+            List<PostImage> postImages = uploadedGalleryUrls.stream()
                     .map(url -> PostImage.builder().imageUrl(url).post(post).build())
                     .toList();
             post.setImages(postImages);
         }
 
-        // 7. Lưu bài đăng vào Database
         Post savePost = postRepository.save(post);
 
         // ghi lại transaction đăng tin
@@ -326,5 +322,95 @@ public class PostService {
                 .pageSize(pageData.getSize())
                 .data(pageData.getContent())
                 .build();
+    }
+
+    // lấy chi tiết để edit
+    public PostEditResponse getPostForEdit(Long postId) {
+        // 1. Lấy ID người dùng hiện tại từ Security Context
+        String sub = SecurityContextHolder.getContext().getAuthentication().getName();
+        Long currentUserId = Long.parseLong(sub);
+
+        // 2. Tìm bài đăng, fetch thêm ảnh để tránh LazyInitializationException
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND));
+
+        // 3. Bảo mật: Chỉ chủ nhân hoặc Admin mới được lấy dữ liệu để sửa
+        if (!post.getUser().getId().equals(currentUserId)) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+
+        return postMapper.toPostEditResponse(post);
+    }
+
+    // update post
+    @Transactional
+    public void updatePost(Long postId, PostUpdateRequest request, MultipartFile thumbnailFile, List<MultipartFile> imageFiles, List<String> imageUrls){
+        // lấy ID người dùng hiện tại từ Security Context
+        String sub = SecurityContextHolder.getContext().getAuthentication().getName();
+        Long currentUserId = Long.parseLong(sub);
+
+        // tìm bài đăng
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND));
+
+        // kiểm tra quyền: Chỉ chủ nhân mới được sửa
+        if (!post.getUser().getId().equals(currentUserId)) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+
+        // tìm Ward
+        Ward ward = wardRepository.findById(request.getWardId())
+                .orElseThrow(() -> new AppException(ErrorCode.WARD_NOT_FOUND));
+
+        // xử lý thumbnail
+        if(thumbnailFile != null && !thumbnailFile.isEmpty()){
+            if(post.getThumbnailUrl() != null){
+                cloudinaryService.deleteFileByUrl(post.getThumbnailUrl());
+                log.info("da xoa thumbnail cu cho bai: {}", post.getTitle());
+            }
+            // up ảnh mới
+            String newThumbnailUrl = cloudinaryService.uploadFile(thumbnailFile, "posts");
+            post.setThumbnailUrl(newThumbnailUrl);
+            log.info("da cap nhat thumbnail moi cho bai: {}", post.getTitle());
+        }
+
+        // xử lý gallery images — luôn rebuild từ trạng thái cuối của FE
+        // Tìm các URL cũ bị xóa để dọn Cloudinary
+        List<String> keepUrls = imageUrls != null ? imageUrls : List.of();
+        if (post.getImages() != null) {
+            post.getImages().stream()
+                    .filter(img -> !keepUrls.contains(img.getImageUrl()))
+                    .forEach(img -> cloudinaryService.deleteFileByUrl(img.getImageUrl()));
+            post.getImages().clear();
+        }
+
+        List<PostImage> finalImages = new ArrayList<>();
+
+        // Giữ lại các URL cũ user không xóa
+        keepUrls.forEach(url ->
+                finalImages.add(PostImage.builder().imageUrl(url).post(post).build())
+        );
+
+        // Upload và thêm ảnh mới
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+            List<String> newImageUrls = imageFiles.parallelStream()
+                    .map(file -> cloudinaryService.uploadFile(file, "posts"))
+                    .toList();
+            newImageUrls.forEach(url ->
+                    finalImages.add(PostImage.builder().imageUrl(url).post(post).build())
+            );
+        }
+
+        post.getImages().addAll(finalImages);
+        log.info("da cap nhat gallery cho bai: {} - tong {} anh", post.getTitle(), finalImages.size());
+        // mapper text
+
+        postMapper.updatePost(post, request);
+
+        // chuyển trạng thái về PENDING để chờ duyệt lại
+        post.setStatus(PostStatus.PENDING);
+
+        postRepository.save(post);
+        log.info("User {} da cap nhat bai dang: {}", currentUserId, post.getTitle());
     }
 }

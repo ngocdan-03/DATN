@@ -26,7 +26,6 @@ public class CustomJwtDecoder implements JwtDecoder {
     @NonFinal
     private String signerKey;
 
-    // Thay thế RedisService cũ bằng Service chuyên biệt cho Blacklist
     private final InvalidatedTokenRedisService invalidatedTokenRedisService;
     private final UserRepository userRepository;
 

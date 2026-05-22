@@ -3,6 +3,7 @@ package com.NgocDan.BACKEND.mapper;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.NgocDan.BACKEND.dto.response.AdminUserResponse;
 import org.mapstruct.*;
 
 import com.NgocDan.BACKEND.dto.request.UserUpdateRequest;
@@ -28,7 +29,12 @@ public interface UserMapper {
     @Mapping(target = "roles", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updateAt", ignore = true)
+    @Mapping(target = "isVerified", ignore = true)
+    @Mapping(target = "avatarUrl", ignore = true)
     void updateUser(@MappingTarget User user, UserUpdateRequest request);
 
     UserDashboardResponse toDashboardResponse(User user);
+
+    // cho admin
+    AdminUserResponse toAdminUserResponse(User user);
 }

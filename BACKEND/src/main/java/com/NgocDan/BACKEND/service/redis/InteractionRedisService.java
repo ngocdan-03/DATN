@@ -17,7 +17,7 @@ public class InteractionRedisService {
     RedisTemplate<String, Object> redisTemplate;
 
     private String getInteractionKey(Long userId, Long postId, String interactionType) {
-        return "interaction:" + interactionType + ":" + userId + ":" + postId;
+        return "datn:interaction:" + interactionType + ":" + userId + ":" + postId;
     }
 
     public boolean isAllowedToInteract(Long userId, Long postId, String interactionType, long hours) {

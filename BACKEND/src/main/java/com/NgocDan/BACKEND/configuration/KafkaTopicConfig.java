@@ -32,4 +32,13 @@ public class KafkaTopicConfig {
                 .replicas(1)
                 .build();
     }
+
+    // gửi mail tới user khi duyệt từ chối hay xóa bài post
+    @Bean
+    public NewTopic postStatusEmailTopic() {
+        return TopicBuilder.name("post_status_email_topic")
+                .partitions(1)
+                .replicas(1)
+                .build();
+    }
 }

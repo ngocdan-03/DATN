@@ -3,12 +3,16 @@ package com.NgocDan.BACKEND.mapper;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import com.NgocDan.BACKEND.dto.request.NewsRequest;
+import com.NgocDan.BACKEND.dto.response.AdminNewsDetailResponse;
+import com.NgocDan.BACKEND.dto.response.AdminNewsResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import com.NgocDan.BACKEND.dto.response.NewsDetailResponse;
 import com.NgocDan.BACKEND.dto.response.NewsResponse;
 import com.NgocDan.BACKEND.model.News;
+import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface NewsMapper {
@@ -19,6 +23,28 @@ public interface NewsMapper {
 
     @Mapping(target = "displayDate", expression = "java(mapDisplayDate(news))")
     NewsDetailResponse toNewsDetailResponse(News news);
+
+    // cho admin
+    AdminNewsResponse toAdminNewsResponse(News news);
+
+    @Mapping(target = "authorName", source = "author.fullName")
+    AdminNewsDetailResponse toAdminNewsDetailResponse(News news);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "author", ignore = true)
+    @Mapping(target = "thumbnailUrl", ignore = true)
+    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    News toNews(NewsRequest request);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "author", ignore = true)
+    @Mapping(target = "thumbnailUrl", ignore = true)
+    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    void updateNews(@MappingTarget News news, NewsRequest request);
 
     // Hàm logic bổ trợ để chọn ngày và format dd/MM/yyyy
     default String mapDisplayDate(News news) {

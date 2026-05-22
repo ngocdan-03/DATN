@@ -1,5 +1,7 @@
 package com.NgocDan.BACKEND.service;
 
+import com.NgocDan.BACKEND.enums.PostStatus;
+import com.NgocDan.BACKEND.model.kafka.PostStatusEmailEvent;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
@@ -23,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 public class EmailService {
     JavaMailSender mailSender;
 
+    //-----------cho auth ---------------
     public void sendOtpEmail(OtpEmail otpEmail) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
@@ -43,5 +46,62 @@ public class EmailService {
             log.error("Loi khi gui email toi {}: {}", otpEmail.getEmail(), e.getMessage());
             throw new AppException(ErrorCode.EMAIL_SEND_FAILED);
         }
+    }
+
+    //-----------cho admin khi xử lý post ---------------
+    public void sendPostStatusEmail(PostStatusEmailEvent event) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(event.getEmail());
+            helper.setSubject(buildPostStatusSubject(event.getPostStatus()));
+
+            String content = buildPostStatusContent(event);
+
+            helper.setText(content, true);
+            mailSender.send(message);
+
+            log.info("Email trang thai bai dang da duoc gui toi: {}", event.getEmail());
+        }catch (MessagingException e) {
+            log.error("Lỗi khi gửi email trạng thái bài đăng tới {}: {}", event.getEmail(), e.getMessage());
+             throw new AppException(ErrorCode.EMAIL_SEND_FAILED);
+        }
+    }
+
+    // hàm bổ trợ
+    private String buildPostStatusSubject(PostStatus status) {
+        if (status == PostStatus.APPROVED) {
+            return "Bài đăng của bạn đã được duyệt";
+        }
+
+        if (status == PostStatus.REJECTED) {
+            return "Bài đăng của bạn đã bị từ chối";
+        }
+
+        if (status == PostStatus.DELETED) {
+            return "Bài đăng của bạn đã bị xóa";
+        }
+
+        return "Cập nhật trạng thái bài đăng";
+    }
+
+    private String buildPostStatusContent(PostStatusEmailEvent event) {
+        String statusMessage;
+
+        if (event.getPostStatus() == PostStatus.APPROVED) {
+            statusMessage = "Bài đăng của bạn đã được quản trị viên duyệt và hiện đã được hiển thị trên hệ thống.";
+        } else if (event.getPostStatus() == PostStatus.REJECTED) {
+            statusMessage = "Bài đăng của bạn đã bị quản trị viên từ chối. Vui lòng kiểm tra và chỉnh sửa lại thông tin bài đăng nếu cần.";
+        } else if (event.getPostStatus() == PostStatus.DELETED) {
+            statusMessage = "Bài đăng của bạn đã bị quản trị viên xóa khỏi hệ thống.";
+        } else {
+            statusMessage = "Bài đăng của bạn vừa được cập nhật trạng thái.";
+        }
+
+        return "<h3>Xin chào " + event.getFullName() + ",</h3>"
+                + "<p>Bài đăng: <b>" + event.getPostTitle() + "</b></p>"
+                + "<p>" + statusMessage + "</p>"
+                + "<p>Cảm ơn bạn đã sử dụng hệ thống RecoLand.</p>";
     }
 }

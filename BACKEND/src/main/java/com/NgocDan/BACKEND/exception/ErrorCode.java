@@ -54,6 +54,8 @@ public enum ErrorCode {
     FORMAT_INVALID(3033, "Dinh dang du lieu khong hop le", HttpStatus.BAD_REQUEST),
     PASSWORD_REQUIRED(3034, "Mat khau khong duoc de trong", HttpStatus.BAD_REQUEST),
     UPLOAD_SIZE_EXCEEDED(3035, "Kich thuoc file vuot qua gioi han cho phep", HttpStatus.BAD_REQUEST),
+    SOURCE_NAME_TOO_LONG(3036, "Ten nguon goc khong duoc qua 100 ky tu", HttpStatus.BAD_REQUEST),
+    NEWS_CATEGORY_REQUIRED(3037, "Danh muc tin tuc khong duoc de trong", HttpStatus.BAD_REQUEST),
 
     // 1xxx: loi nghiep vu
     USER_EXISTED(1006, "Email nay da duoc dang ky", HttpStatus.BAD_REQUEST),
@@ -72,6 +74,7 @@ public enum ErrorCode {
     CONFIRM_PASSWORD_NOT_MATCH(1007, "Mat khau xac nhan khong khop", HttpStatus.BAD_REQUEST),
     POST_TOO_FREQUENT(1008, "Dang tin qua nhieu lan, vui long thu lai sau", HttpStatus.TOO_MANY_REQUESTS),
     TOO_MANY_REQUESTS(1009, "Yeu cau qua nhieu lan, vui long thu lai sau", HttpStatus.TOO_MANY_REQUESTS),
+    INVALID_POST_STATUS(1010, "Trang thai bai dang khong hop le", HttpStatus.BAD_REQUEST),
 
     // 4xxx: Post & New Service
     NEWS_NOT_EXISTED(4001, "Tin tuc khong ton tai", HttpStatus.NOT_FOUND),

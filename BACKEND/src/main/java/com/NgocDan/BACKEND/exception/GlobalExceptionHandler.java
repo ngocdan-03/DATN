@@ -3,9 +3,11 @@ package com.NgocDan.BACKEND.exception;
 import java.util.Map;
 import java.util.Objects;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import jakarta.validation.ConstraintViolationException;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -115,14 +117,14 @@ public class GlobalExceptionHandler {
     }
 
     // 6. Lỗi format dữ liệu đầu vào (Ví dụ: JSON parse lỗi, LocalDate format sai...)
-    @ExceptionHandler(value = org.springframework.http.converter.HttpMessageNotReadableException.class)
+    @ExceptionHandler(value = HttpMessageNotReadableException.class)
     ResponseEntity<ApiResponse<?>> handlingHttpMessageNotReadableException(
-            org.springframework.http.converter.HttpMessageNotReadableException exception) {
+            HttpMessageNotReadableException exception) {
 
         ErrorCode errorCode = ErrorCode.FORMAT_INVALID; // Mặc định
 
         // Kiểm tra xem nguyên nhân có phải do Jackson không parse được format hay không
-        if (exception.getCause() instanceof com.fasterxml.jackson.databind.exc.InvalidFormatException invalidFormatEx) {
+        if (exception.getCause() instanceof InvalidFormatException invalidFormatEx) {
 
             // Nếu đích đến là kiểu LocalDate, ta khẳng định là lỗi format ngày tháng
             if (invalidFormatEx.getTargetType().equals(java.time.LocalDate.class)) {
