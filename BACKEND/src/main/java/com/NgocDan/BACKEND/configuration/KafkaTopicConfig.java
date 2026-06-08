@@ -41,4 +41,21 @@ public class KafkaTopicConfig {
                 .replicas(1)
                 .build();
     }
+
+    // topic cho AI
+    @Bean
+    public NewTopic postApprovedTopic() {
+        return TopicBuilder.name("post_approved_topic")
+                .partitions(1)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
+    public NewTopic postDeletedTopic() {
+        return TopicBuilder.name("post_deleted_topic")
+                .partitions(1)
+                .replicas(1)
+                .build();
+    }
 }

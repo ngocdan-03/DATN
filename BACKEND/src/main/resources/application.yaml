@@ -45,3 +45,6 @@ jwt:
   signerKey: ${JWT_SIGNER_KEY}
   valid-duration: 1800 #second 30 phut
   refresh-duration: 604800 #second 1 tuan
+ai:
+  server:
+    url: http://localhost:8000

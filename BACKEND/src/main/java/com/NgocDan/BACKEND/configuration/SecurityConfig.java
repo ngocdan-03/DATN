@@ -36,7 +36,7 @@ public class SecurityConfig {
         "/news/{id}",
         "/hello",
         "/payment/vnpay-callback",
-        "/payment/vnpay-ipn" // Test hệ thống
+        "/payment/vnpay-ipn", // Test hệ thống
     };
 
     private final CustomJwtDecoder customJwtDecoder; // Khai báo decoder
@@ -47,6 +47,8 @@ public class SecurityConfig {
 
         httpSecurity.authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS_AUTH)
                 .permitAll() // Cho phép POST vào Auth
+                .requestMatchers(HttpMethod.POST, "/recommend/personal", "/recommend/similar/**")
+                .permitAll()
                 .requestMatchers(HttpMethod.GET, PUBLIC_ENDPOINTS_GUEST)
                 .permitAll() // Cho phép khách xem (GET)
                 .anyRequest()

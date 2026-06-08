@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import com.NgocDan.BACKEND.enums.PostStatus;
+import com.NgocDan.BACKEND.model.Post;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -32,4 +35,15 @@ public interface UserInteractionRepository extends JpaRepository<UserInteraction
             + "AND ui.createdAt >= :startDate "
             + "GROUP BY DATE(ui.createdAt)")
     List<Object[]> getViewTrendRaw(@Param("ownerId") Long ownerId, @Param("startDate") LocalDateTime startDate);
+
+    // lấy top bài đăng được xem nhiều nhất
+    @Query("SELECT ui.post FROM UserInteraction ui " +
+            "WHERE ui.interactionType = :type AND ui.post.status = :status " +
+            "GROUP BY ui.post " +
+            "ORDER BY COUNT(ui.id) DESC")
+    List<Post> findTopPostsByInteractionTypeAndStatus(
+            @Param("type") InteractionType type,
+            @Param("status") PostStatus status,
+            Pageable pageable
+    );
 }

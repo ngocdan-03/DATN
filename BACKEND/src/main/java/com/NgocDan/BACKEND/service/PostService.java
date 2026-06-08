@@ -8,7 +8,9 @@ import java.util.Optional;
 
 import com.NgocDan.BACKEND.dto.request.PostUpdateRequest;
 import com.NgocDan.BACKEND.model.kafka.InteractionEvent;
+import com.NgocDan.BACKEND.model.kafka.PostDeletedEvent;
 import com.NgocDan.BACKEND.service.kafka.InteractionKafkaProducer;
+import com.NgocDan.BACKEND.service.kafka.PostDeletedKafkaProducer;
 import jakarta.transaction.Transactional;
 
 import org.springframework.data.domain.Page;
@@ -50,6 +52,7 @@ public class PostService {
     PostMapper postMapper;
 
     InteractionKafkaProducer interactionKafkaProducer;
+    PostDeletedKafkaProducer postDeletedKafkaProducer;
 
     // chi phí đằn tin
     BigDecimal POST_PRICE = new BigDecimal("23003");
@@ -122,7 +125,7 @@ public class PostService {
                 response.setFavorite(isSaved);
 
                 // Ghi lại tương tác VIEW của người dùng này vào DB
-                saveNewInteraction(currentUserId, postId, InteractionType.VIEW);
+                saveNewInteraction(currentUserId, postId, InteractionType.VIEW, "ADD");
 
             } catch (NumberFormatException e) {
                 log.error("loi dinh dang userId trong token {}", sub);
@@ -132,7 +135,7 @@ public class PostService {
     }
 
     // thêm tương tác (dùng chung cho cả VIEW, SAVE, CONTACT)
-    private void saveNewInteraction(Long userId, Long postId, InteractionType type) {
+    private void saveNewInteraction(Long userId, Long postId, InteractionType type, String action) {
         // Nếu là VIEW thì kiểm tra chống spam trước khi lưu
         if (type == InteractionType.VIEW) {
             boolean canInteract = interactionRedisService.isAllowedToInteract(userId, postId, type.name(), 1);
@@ -146,6 +149,7 @@ public class PostService {
                 .userId(userId)
                 .postId(postId)
                 .interactionType(type)
+                .action(action)
                 .timestamp(LocalDateTime.now().toString())
                 .build();
         interactionKafkaProducer.publishInteraction(event);
@@ -169,9 +173,10 @@ public class PostService {
         if (existing.isPresent()) {
             // bỏ lưu
             userInteractionRepository.delete(existing.get());
+            saveNewInteraction(userId, postId, InteractionType.SAVE, "REMOVE");
             log.info("user:{} da bo luu:{}", userId, postId);
         } else {
-            saveNewInteraction(userId, postId, InteractionType.SAVE);
+            saveNewInteraction(userId, postId, InteractionType.SAVE, "ADD");
         }
     }
 
@@ -186,7 +191,7 @@ public class PostService {
             throw new AppException(ErrorCode.POST_NOT_FOUND);
         }
 
-        saveNewInteraction(userId, postId, InteractionType.CONTACT);
+        saveNewInteraction(userId, postId, InteractionType.CONTACT, "ADD");
     }
 
     // đăng tin
@@ -296,6 +301,12 @@ public class PostService {
         // xoá bài đăng
         post.setStatus(PostStatus.DELETED);
         postRepository.save(post);
+        // gửi event xóa vector nếu bài đang APPROVED
+        if (post.getStatus() == PostStatus.APPROVED) {
+            postDeletedKafkaProducer.publishPostDeleted(
+                    PostDeletedEvent.builder().postId(postId).build()
+            );
+        }
         log.info("User {} da xoa bai: {}", userId, post.getTitle());
     }
 

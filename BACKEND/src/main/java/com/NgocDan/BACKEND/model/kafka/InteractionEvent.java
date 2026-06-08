@@ -4,7 +4,6 @@ import com.NgocDan.BACKEND.enums.InteractionType;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -15,5 +14,6 @@ public class InteractionEvent {
     Long userId;
     Long postId;
     InteractionType interactionType;
+    String action; // add or remove cho ai xử lý toggle save
     String timestamp;
 }

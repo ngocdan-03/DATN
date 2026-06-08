@@ -7,6 +7,7 @@ import java.util.List;
 import com.NgocDan.BACKEND.dto.request.PostUpdateRequest;
 import com.NgocDan.BACKEND.dto.response.AdminPostResponse;
 import com.NgocDan.BACKEND.dto.response.PostEditResponse;
+import com.NgocDan.BACKEND.model.kafka.PostApprovedEvent;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -80,4 +81,12 @@ public interface PostMapper {
     AdminPostResponse toAdminPostResponse(Post post);
 
     List<AdminPostResponse> toAdminPostResponseList(List<Post> posts);
+
+    // mapper cho AIserver
+    @Mapping(target = "postId", source = "id")
+    @Mapping(target = "propertyType", expression = "java(post.getPropertyType().name())")
+    @Mapping(target = "listingType", expression = "java(post.getListingType().name())")
+    @Mapping(target = "legalStatus", expression = "java(post.getLegalStatus().name())")
+    @Mapping(target = "wardName", source = "ward.name")
+    PostApprovedEvent toPostApprovedEvent(Post post);
 }

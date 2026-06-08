@@ -112,4 +112,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             @Param("listingType") ListingType listingType,
             @Param("keyword") String keyword,
             Pageable pageable);
+
+    // tìm top 6
+    List<Post> findTop6ByStatusOrderByCreatedAtDesc(PostStatus status);
 }

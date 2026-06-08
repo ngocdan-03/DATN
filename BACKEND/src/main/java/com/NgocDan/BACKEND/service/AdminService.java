@@ -13,11 +13,14 @@ import com.NgocDan.BACKEND.model.News;
 import com.NgocDan.BACKEND.model.Post;
 import com.NgocDan.BACKEND.model.Transaction;
 import com.NgocDan.BACKEND.model.User;
+import com.NgocDan.BACKEND.model.kafka.PostDeletedEvent;
 import com.NgocDan.BACKEND.model.kafka.PostStatusEmailEvent;
 import com.NgocDan.BACKEND.repository.NewsRepository;
 import com.NgocDan.BACKEND.repository.PostRepository;
 import com.NgocDan.BACKEND.repository.TransactionRepository;
 import com.NgocDan.BACKEND.repository.UserRepository;
+import com.NgocDan.BACKEND.service.kafka.PostApprovedKafkaProducer;
+import com.NgocDan.BACKEND.service.kafka.PostDeletedKafkaProducer;
 import com.NgocDan.BACKEND.service.kafka.PostStatusEmailProducer;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -52,6 +55,8 @@ public class AdminService {
     UserMapper userMapper;
     TransactionMapper transactionMapper;
     PostStatusEmailProducer postStatusEmailProducer;
+    PostApprovedKafkaProducer postApprovedKafkaProducer;
+    PostDeletedKafkaProducer postDeletedKafkaProducer;
     NewsRepository newsRepository;
     NewsMapper newsMapper;
     CloudinaryService cloudinaryService;
@@ -143,6 +148,12 @@ public class AdminService {
         }
         post.setStatus(PostStatus.APPROVED);
         postRepository.save(post);
+        // Gửi event để FastAPI index/update vector vào Qdrant
+        postApprovedKafkaProducer.publishPostApproved(
+                postMapper.toPostApprovedEvent(post)
+        );
+
+        //gưửi thông báo
         publishPostStatusEmail(post);
         log.info("[Admin] Da duyet bai dang id: {}", postId);
     }
@@ -175,7 +186,14 @@ public class AdminService {
 
         post.setStatus(PostStatus.DELETED);
         postRepository.save(post);
+        // Gửi event để FastAPI xóa vector khỏi Qdrant
+        postDeletedKafkaProducer.publishPostDeleted(
+                PostDeletedEvent.builder()
+                        .postId(postId)
+                        .build()
+        );
 
+        // gửi mail thông báo
         publishPostStatusEmail(post);
         log.info("[Admin] Da xoa bai dang id: {}", postId);
     }
