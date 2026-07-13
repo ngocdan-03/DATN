@@ -25,27 +25,32 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
             HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
             throws IOException {
 
-        // Mặc định là lỗi chưa xác thực (2001)
+        // Mặc định ban đầu là lỗi chưa xác thực (2001)
         ErrorCode errorCode = ErrorCode.UNAUTHENTICATED;
 
-        // Lấy nguyên nhân thực sự từ Decoder ném ra
-        Throwable cause = authException.getCause();
+        // 🌟 THAY ĐỔI: Chủ động rút nguyên nhân gốc mà Decoder đã gửi vào Request
+        String jwtCause = (String) request.getAttribute("jwt_exception_cause");
 
-        if (cause != null) {
-            String message = cause.getMessage();
-            log.warn("Auth failure cause: {}", message);
+        log.warn("Nguyên nhân lỗi thực tế rút ra từ Request attribute: {}", jwtCause);
 
-            if (message.contains("Jwt expired")) {
+        // Tiến hành so khớp chính xác chuỗi nguyên bản được định nghĩa từ tầng Decoder
+        if (jwtCause != null) {
+            if (jwtCause.equals("Jwt expired")) {
                 errorCode = ErrorCode.INVALID_TOKEN; // 2004
-            } else if (message.equals("TOKEN_REVOKED")) {
+            } else if (jwtCause.equals("TOKEN_REVOKED")) {
                 errorCode = ErrorCode.TOKEN_REUSE_DETECTED; // 2005
-            } else if (message.equals("USER_LOCKED")) {
-                errorCode = ErrorCode.USER_LOCKED; // 2006
-            } else if (message.equals("USER_NOT_VERIFIED")) {
+            } else if (jwtCause.equals("USER_LOCKED")) {
+                errorCode = ErrorCode.USER_LOCKED; // 🌟 2006 - Giờ sẽ nhảy vào đây chính xác 100%!
+            } else if (jwtCause.equals("USER_NOT_VERIFIED")) {
                 errorCode = ErrorCode.USER_NOT_VERIFIED; // 1012
-            } else if (message.equals("USER_NOT_EXISTED")) {
+            } else if (jwtCause.equals("USER_NOT_EXISTED")) {
                 errorCode = ErrorCode.USER_NOT_EXISTED; // 1009
+            } else if (jwtCause.equals("INVALID_TOKEN")) {
+                errorCode = ErrorCode.INVALID_TOKEN; // 2004
             }
+        } else {
+            // Không tìm thấy ký gửi (Ví dụ người dùng không truyền hẳn token lên header)
+            log.warn("Auth failure lý do mặc định từ hệ thống: {}", authException.getMessage());
         }
 
         response.setStatus(errorCode.getStatusCode().value());

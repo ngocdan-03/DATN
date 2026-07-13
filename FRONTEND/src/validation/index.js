@@ -5,8 +5,12 @@ import {
 	otpEmailSchema,
 	otpCodeSchema,
 	forgotResetSchema,
+	changePasswordSchema,
+	updateInfoSchema,
 } from './authSchemas';
+
 import { createPostSchema } from './postSchemas';
+
 import {
 	EMAIL_REGEX,
 	FULL_NAME_REGEX,
@@ -22,6 +26,8 @@ export const authValidationSchemas = {
 	otpEmailSchema,
 	otpCodeSchema,
 	forgotResetSchema,
+	changePasswordSchema,
+	updateInfoSchema,
 };
 
 export const postValidationSchemas = {
@@ -37,5 +43,4 @@ export const authRegexPatterns = {
 	PHONE_REGEX,
 };
 
-// Helper tao resolver cho React Hook Form.
 export const buildYupResolver = (schema) => yupResolver(schema);

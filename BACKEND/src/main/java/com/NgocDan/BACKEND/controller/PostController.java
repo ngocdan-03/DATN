@@ -3,14 +3,15 @@ package com.NgocDan.BACKEND.controller;
 import java.math.BigDecimal;
 import java.util.List;
 
-import com.NgocDan.BACKEND.dto.request.PostUpdateRequest;
 import jakarta.validation.Valid;
 
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.NgocDan.BACKEND.dto.request.PostCreateRequest;
+import com.NgocDan.BACKEND.dto.request.PostUpdateRequest;
 import com.NgocDan.BACKEND.dto.response.*;
 import com.NgocDan.BACKEND.enums.LegalStatus;
 import com.NgocDan.BACKEND.enums.ListingType;
@@ -21,7 +22,6 @@ import com.NgocDan.BACKEND.service.PostService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/posts")
@@ -175,7 +175,7 @@ public class PostController {
             @RequestPart("data") @Valid PostUpdateRequest request,
             @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnailFile,
             @RequestPart(value = "images", required = false) List<MultipartFile> imageFiles,
-            @RequestParam(value = "imageUrls", required = false) List<String> imageUrls) { // ✅ dùng @RequestParam
+            @RequestParam(value = "imageUrls", required = false) List<String> imageUrls) {
 
         postService.updatePost(postId, request, thumbnailFile, imageFiles, imageUrls);
 

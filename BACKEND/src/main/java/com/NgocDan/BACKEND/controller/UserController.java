@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.NgocDan.BACKEND.dto.request.PasswordChangeRequest;
 import com.NgocDan.BACKEND.dto.request.UserUpdateRequest;
@@ -15,7 +16,6 @@ import com.NgocDan.BACKEND.service.UserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/users")

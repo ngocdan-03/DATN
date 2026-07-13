@@ -1,5 +1,21 @@
 package com.NgocDan.BACKEND.service;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.NgocDan.BACKEND.dto.request.NewsRequest;
 import com.NgocDan.BACKEND.dto.response.*;
 import com.NgocDan.BACKEND.enums.*;
@@ -22,25 +38,11 @@ import com.NgocDan.BACKEND.repository.UserRepository;
 import com.NgocDan.BACKEND.service.kafka.PostApprovedKafkaProducer;
 import com.NgocDan.BACKEND.service.kafka.PostDeletedKafkaProducer;
 import com.NgocDan.BACKEND.service.kafka.PostStatusEmailProducer;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -82,11 +84,8 @@ public class AdminService {
         List<Object[]> rawMonthly = transactionRepository.getMonthlyRevenueByYear(year);
 
         // Map month -> revenue
-        Map<Integer, BigDecimal> revenueMap = rawMonthly.stream()
-                .collect(Collectors.toMap(
-                        row -> (Integer) row[0],
-                        row -> (BigDecimal) row[1]
-                ));
+        Map<Integer, BigDecimal> revenueMap =
+                rawMonthly.stream().collect(Collectors.toMap(row -> (Integer) row[0], row -> (BigDecimal) row[1]));
 
         // Đảm bảo đủ 12 tháng, tháng nào không có thì = 0
         List<MonthlyRevenueResponse> monthlyRevenue = new ArrayList<>();
@@ -115,14 +114,17 @@ public class AdminService {
 
     // get all posts với filter cho admin
     public PageResponse<AdminPostResponse> getAllPosts(
-            String keyword, PostStatus status, Integer wardId,
-            PropertyType propertyType, ListingType listingType,
-            int page, int size) {
+            String keyword,
+            PostStatus status,
+            Integer wardId,
+            PropertyType propertyType,
+            ListingType listingType,
+            int page,
+            int size) {
         String kw = (keyword != null && !keyword.isBlank()) ? keyword.trim() : null;
         Pageable pageable = PageRequest.of(page - 1, size);
 
-        Page<Post> pageData = postRepository.findAllForAdmin(
-                status, wardId, propertyType, listingType, kw, pageable);
+        Page<Post> pageData = postRepository.findAllForAdmin(status, wardId, propertyType, listingType, kw, pageable);
 
         List<AdminPostResponse> data = pageData.getContent().stream()
                 .map(postMapper::toAdminPostResponse)
@@ -140,8 +142,7 @@ public class AdminService {
     // duyệt bài đăng
     @Transactional
     public void approvePost(Long postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(()-> new AppException(ErrorCode.POST_NOT_FOUND));
+        Post post = postRepository.findById(postId).orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND));
 
         if (post.getStatus() != PostStatus.PENDING) {
             throw new AppException(ErrorCode.INVALID_POST_STATUS);
@@ -149,11 +150,9 @@ public class AdminService {
         post.setStatus(PostStatus.APPROVED);
         postRepository.save(post);
         // Gửi event để FastAPI index/update vector vào Qdrant
-        postApprovedKafkaProducer.publishPostApproved(
-                postMapper.toPostApprovedEvent(post)
-        );
+        postApprovedKafkaProducer.publishPostApproved(postMapper.toPostApprovedEvent(post));
 
-        //gưửi thông báo
+        // gưửi thông báo
         publishPostStatusEmail(post);
         log.info("[Admin] Da duyet bai dang id: {}", postId);
     }
@@ -161,8 +160,7 @@ public class AdminService {
     // từ chối bài đăng
     @Transactional
     public void rejectPost(Long postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(()-> new AppException(ErrorCode.POST_NOT_FOUND));
+        Post post = postRepository.findById(postId).orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND));
 
         if (post.getStatus() != PostStatus.PENDING) {
             throw new AppException(ErrorCode.INVALID_POST_STATUS);
@@ -177,8 +175,7 @@ public class AdminService {
     // xóa bài đăng (chuyển trạng thái thành DELETED)
     @Transactional
     public void deletePost(Long postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(()-> new AppException(ErrorCode.POST_NOT_FOUND));
+        Post post = postRepository.findById(postId).orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND));
 
         if (post.getStatus() == PostStatus.DELETED) {
             throw new AppException(ErrorCode.INVALID_POST_STATUS);
@@ -188,10 +185,7 @@ public class AdminService {
         postRepository.save(post);
         // Gửi event để FastAPI xóa vector khỏi Qdrant
         postDeletedKafkaProducer.publishPostDeleted(
-                PostDeletedEvent.builder()
-                        .postId(postId)
-                        .build()
-        );
+                PostDeletedEvent.builder().postId(postId).build());
 
         // gửi mail thông báo
         publishPostStatusEmail(post);
@@ -214,8 +208,7 @@ public class AdminService {
 
     // get all users với filter cho admin
     public PageResponse<AdminUserResponse> getAllUsers(
-            String keyword, Boolean isVerified, Boolean isLocked,
-            int page, int size) {
+            String keyword, Boolean isVerified, Boolean isLocked, int page, int size) {
         String kw = (keyword != null && !keyword.isBlank()) ? keyword.trim() : null;
         Pageable pageable = PageRequest.of(page - 1, size);
 
@@ -234,15 +227,13 @@ public class AdminService {
 
     // xem chi tiết user
     public AdminUserDetailResponse getUserDetail(Long userId, int page, int size) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        Pageable pageable = PageRequest.of(page-1, size, Sort.by("createdAt").descending());
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
         Page<Transaction> transactionPage = transactionRepository.findByUserId(userId, pageable);
 
-        List<TransactionResponse> transactions = transactionMapper.toTransactionResponseList(
-                transactionPage.getContent()
-        );
+        List<TransactionResponse> transactions =
+                transactionMapper.toTransactionResponseList(transactionPage.getContent());
         PageResponse<TransactionResponse> transactionPageResponse = PageResponse.<TransactionResponse>builder()
                 .currentPage(page)
                 .totalPages(transactionPage.getTotalPages())
@@ -250,7 +241,7 @@ public class AdminService {
                 .pageSize(transactionPage.getSize())
                 .data(transactions)
                 .build();
-        if(page>1){
+        if (page > 1) {
             return AdminUserDetailResponse.builder()
                     .recentTransactions(transactionPageResponse)
                     .build();
@@ -278,14 +269,12 @@ public class AdminService {
     // mở khóa / khóa user
     @Transactional
     public void toggleLockUser(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         user.setIsLocked(!user.getIsLocked());
         userRepository.save(user);
 
-        log.info("[Admin] Da {} tai khoan user id: {}",
-                user.getIsLocked() ? "khoa" : "mo khoa", userId);
+        log.info("[Admin] Da {} tai khoan user id: {}", user.getIsLocked() ? "khoa" : "mo khoa", userId);
     }
 
     // --------------- QUẢN LÝ NEWS ---------------
@@ -301,11 +290,7 @@ public class AdminService {
     // lấy all news
     @Transactional(readOnly = true)
     public PageResponse<AdminNewsResponse> getAllNewsForAdmin(
-            String keyword,
-            NewsCategory category,
-            NewsStatus status,
-            int page,
-            int size) {
+            String keyword, NewsCategory category, NewsStatus status, int page, int size) {
         String kw = (keyword != null && !keyword.isBlank()) ? keyword.trim() : null;
 
         Pageable pageable = PageRequest.of(page - 1, size);
@@ -325,8 +310,7 @@ public class AdminService {
     // lấy chi tiết
     @Transactional(readOnly = true)
     public AdminNewsDetailResponse getNewsDetailForAdmin(Long newsId) {
-        News news = newsRepository.findById(newsId)
-                .orElseThrow(() -> new AppException(ErrorCode.NEWS_NOT_EXISTED));
+        News news = newsRepository.findById(newsId).orElseThrow(() -> new AppException(ErrorCode.NEWS_NOT_EXISTED));
 
         return newsMapper.toAdminNewsDetailResponse(news);
     }
@@ -341,8 +325,7 @@ public class AdminService {
         String sub = SecurityContextHolder.getContext().getAuthentication().getName();
         Long adminId = Long.parseLong(sub);
 
-        User author = userRepository.findById(adminId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        User author = userRepository.findById(adminId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         String thumbnailUrl = cloudinaryService.uploadFile(thumbnailFile, "news");
 
@@ -359,8 +342,7 @@ public class AdminService {
     // cập nhật news(khong ảnh)
     @Transactional
     public void updateNewsInfo(Long newsId, NewsRequest request) {
-        News news = newsRepository.findById(newsId)
-                .orElseThrow(() -> new AppException(ErrorCode.NEWS_NOT_EXISTED));
+        News news = newsRepository.findById(newsId).orElseThrow(() -> new AppException(ErrorCode.NEWS_NOT_EXISTED));
 
         newsMapper.updateNews(news, request);
         newsRepository.save(news);
@@ -375,8 +357,7 @@ public class AdminService {
             throw new AppException(ErrorCode.THUMBNAIL_REQUIRED);
         }
 
-        News news = newsRepository.findById(newsId)
-                .orElseThrow(() -> new AppException(ErrorCode.NEWS_NOT_EXISTED));
+        News news = newsRepository.findById(newsId).orElseThrow(() -> new AppException(ErrorCode.NEWS_NOT_EXISTED));
 
         String oldThumbnailUrl = news.getThumbnailUrl();
 
@@ -397,8 +378,7 @@ public class AdminService {
     // cập nhật trạng thái news
     @Transactional
     public void hideNews(Long newsId) {
-        News news = newsRepository.findById(newsId)
-                .orElseThrow(() -> new AppException(ErrorCode.NEWS_NOT_EXISTED));
+        News news = newsRepository.findById(newsId).orElseThrow(() -> new AppException(ErrorCode.NEWS_NOT_EXISTED));
 
         news.setStatus(NewsStatus.HIDDEN);
         newsRepository.save(news);
@@ -408,8 +388,7 @@ public class AdminService {
 
     @Transactional
     public void showNews(Long newsId) {
-        News news = newsRepository.findById(newsId)
-                .orElseThrow(() -> new AppException(ErrorCode.NEWS_NOT_EXISTED));
+        News news = newsRepository.findById(newsId).orElseThrow(() -> new AppException(ErrorCode.NEWS_NOT_EXISTED));
 
         news.setStatus(NewsStatus.PUBLISHED);
         newsRepository.save(news);
@@ -417,25 +396,22 @@ public class AdminService {
         log.info("[Admin] Da hien thi lai tin tuc: {}", news.getTitle());
     }
 
-    //----------------- QUẢN LÝ GIAO DỊCH ---------------
+    // ----------------- QUẢN LÝ GIAO DỊCH ---------------
     // lấy tất cả giao dịch với filter cho admin
     public PageResponse<AdminTransactionResponse> getAllTransactions(
-            String keyword, TransactionType type, TransactionStatus status,
-            int page, int size) {
+            String keyword, TransactionType type, TransactionStatus status, int page, int size) {
 
         String kw = (keyword != null && !keyword.isBlank()) ? keyword.trim() : null;
         Pageable pageable = PageRequest.of(page - 1, size);
 
-        Page<Transaction> pageData = transactionRepository.findAllForAdmin(
-                type, status, kw, pageable);
+        Page<Transaction> pageData = transactionRepository.findAllForAdmin(type, status, kw, pageable);
 
         return PageResponse.<AdminTransactionResponse>builder()
                 .currentPage(page)
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
                 .pageSize(pageData.getSize())
-                .data(transactionMapper.toAdminTransactionResponseList(
-                        pageData.getContent()))
+                .data(transactionMapper.toAdminTransactionResponseList(pageData.getContent()))
                 .build();
     }
 
@@ -446,8 +422,7 @@ public class AdminService {
         // Doanh thu các mốc thời gian
         BigDecimal totalRevenue = transactionRepository.getTotalRevenue();
         BigDecimal revenueToday = transactionRepository.getRevenueByDate(now);
-        BigDecimal revenueThisMonth = transactionRepository.getRevenueByMonth(
-                now.getYear(), now.getMonthValue());
+        BigDecimal revenueThisMonth = transactionRepository.getRevenueByMonth(now.getYear(), now.getMonthValue());
         BigDecimal revenueThisYear = transactionRepository.getRevenueByYear(now.getYear());
 
         // Thống kê số lượng giao dịch
@@ -457,11 +432,8 @@ public class AdminService {
 
         // Biểu đồ 12 tháng theo year param
         List<Object[]> rawMonthly = transactionRepository.getMonthlyRevenueByYear(year);
-        Map<Integer, BigDecimal> revenueMap = rawMonthly.stream()
-                .collect(Collectors.toMap(
-                        row -> (Integer) row[0],
-                        row -> (BigDecimal) row[1]
-                ));
+        Map<Integer, BigDecimal> revenueMap =
+                rawMonthly.stream().collect(Collectors.toMap(row -> (Integer) row[0], row -> (BigDecimal) row[1]));
 
         List<MonthlyRevenueResponse> monthlyRevenue = new ArrayList<>();
         for (int m = 1; m <= 12; m++) {

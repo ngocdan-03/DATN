@@ -1,19 +1,22 @@
 package com.NgocDan.BACKEND.controller;
 
-import com.NgocDan.BACKEND.dto.request.NewsRequest;
-import com.NgocDan.BACKEND.dto.response.*;
-import com.NgocDan.BACKEND.enums.*;
-import com.NgocDan.BACKEND.service.AdminService;
+import java.time.LocalDate;
+
 import jakarta.validation.Valid;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
+
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDate;
+import com.NgocDan.BACKEND.dto.request.NewsRequest;
+import com.NgocDan.BACKEND.dto.response.*;
+import com.NgocDan.BACKEND.enums.*;
+import com.NgocDan.BACKEND.service.AdminService;
+
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 @RestController
 @RequestMapping("/admin")
@@ -25,8 +28,7 @@ public class AdminController {
 
     @GetMapping("/dashboard")
     @PreAuthorize("hasAuthority('ADMIN_DASHBOARD_VIEW')")
-    public ApiResponse<AdminDashboardResponse> getDashboard(
-            @RequestParam(defaultValue = "0") int year) {
+    public ApiResponse<AdminDashboardResponse> getDashboard(@RequestParam(defaultValue = "0") int year) {
 
         // Nếu không truyền year thì lấy năm hiện tại
         int targetYear = year == 0 ? LocalDate.now().getYear() : year;
@@ -38,25 +40,24 @@ public class AdminController {
                 .build();
     }
 
-    //----------quản lý post----------
+    // ----------quản lý post----------
 
     // lấy danh sách
     @GetMapping("/posts")
     @PreAuthorize("hasAuthority('ADMIN_GETALL_POSTS')")
     public ApiResponse<PageResponse<AdminPostResponse>> getAllPosts(
-            @RequestParam(value = "keyword",required = false) String keyword,
-            @RequestParam(value = "status",required = false) PostStatus status,
-            @RequestParam(value = "wardId",required = false) Integer wardId,
-            @RequestParam(value = "propertyType",required = false) PropertyType propertyType,
-            @RequestParam(value = "listingType",required = false) ListingType listingType,
-            @RequestParam(value = "page",defaultValue = "1") int page,
-            @RequestParam(value = "size",defaultValue = "6") int size) {
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "status", required = false) PostStatus status,
+            @RequestParam(value = "wardId", required = false) Integer wardId,
+            @RequestParam(value = "propertyType", required = false) PropertyType propertyType,
+            @RequestParam(value = "listingType", required = false) ListingType listingType,
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "size", defaultValue = "6") int size) {
 
         return ApiResponse.<PageResponse<AdminPostResponse>>builder()
                 .code(1000)
                 .message("Lấy danh sách bài đăng thành công!")
-                .result(adminService.getAllPosts(
-                        keyword, status, wardId, propertyType, listingType, page, size))
+                .result(adminService.getAllPosts(keyword, status, wardId, propertyType, listingType, page, size))
                 .build();
     }
 
@@ -93,17 +94,17 @@ public class AdminController {
                 .build();
     }
 
-    //----------quản lý tài khoản----------
+    // ----------quản lý tài khoản----------
 
     // lấy all user với filter
     @GetMapping("/users")
     @PreAuthorize("hasAuthority('ADMIN_GETALL_USERS')")
     public ApiResponse<PageResponse<AdminUserResponse>> getAllUsers(
             @RequestParam(value = "keyword", required = false) String keyword,
-            @RequestParam(value = "isVerified",required = false) Boolean isVerified,
-            @RequestParam(value = "isLocked",required = false) Boolean isLocked,
-            @RequestParam(value = "page",defaultValue = "1") int page,
-            @RequestParam(value = "size",defaultValue = "6") int size) {
+            @RequestParam(value = "isVerified", required = false) Boolean isVerified,
+            @RequestParam(value = "isLocked", required = false) Boolean isLocked,
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "size", defaultValue = "6") int size) {
 
         return ApiResponse.<PageResponse<AdminUserResponse>>builder()
                 .code(1000)
@@ -169,8 +170,7 @@ public class AdminController {
     @PostMapping(value = "/news", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('ADMIN_CREATE_NEWS')")
     public ApiResponse<Void> createNews(
-            @RequestPart("data") @Valid NewsRequest request,
-            @RequestPart("thumbnail") MultipartFile thumbnailFile) {
+            @RequestPart("data") @Valid NewsRequest request, @RequestPart("thumbnail") MultipartFile thumbnailFile) {
 
         adminService.createNews(request, thumbnailFile);
 
@@ -183,9 +183,7 @@ public class AdminController {
     // cập nhật nội dung tin tức, không cập nhật ảnh
     @PutMapping("/news/{newsId}")
     @PreAuthorize("hasAuthority('ADMIN_UPDATE_NEWS')")
-    public ApiResponse<Void> updateNewsInfo(
-            @PathVariable Long newsId,
-            @RequestBody @Valid NewsRequest request) {
+    public ApiResponse<Void> updateNewsInfo(@PathVariable Long newsId, @RequestBody @Valid NewsRequest request) {
 
         adminService.updateNewsInfo(newsId, request);
 
@@ -199,8 +197,7 @@ public class AdminController {
     @PutMapping(value = "/news/{newsId}/thumbnail", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('ADMIN_UPDATE_NEWS')")
     public ApiResponse<String> updateNewsThumbnail(
-            @PathVariable Long newsId,
-            @RequestParam("file") MultipartFile file) {
+            @PathVariable Long newsId, @RequestParam("file") MultipartFile file) {
 
         return ApiResponse.<String>builder()
                 .code(1000)
@@ -236,8 +233,7 @@ public class AdminController {
     // ---------- quản lý tài chính----------
     @GetMapping("/revenue")
     @PreAuthorize("hasAuthority('ADMIN_VIEW_REVENUE')")
-    public ApiResponse<AdminRevenueResponse> getRevenue(
-            @RequestParam(value = "year", defaultValue = "0") int year) {
+    public ApiResponse<AdminRevenueResponse> getRevenue(@RequestParam(value = "year", defaultValue = "0") int year) {
 
         int targetYear = year == 0 ? LocalDate.now().getYear() : year;
 
@@ -253,10 +249,10 @@ public class AdminController {
     @PreAuthorize("hasAuthority('ADMIN_GETALL_TRANSACTIONS')")
     public ApiResponse<PageResponse<AdminTransactionResponse>> getAllTransactions(
             @RequestParam(value = "keyword", required = false) String keyword,
-            @RequestParam(value = "type",required = false) TransactionType type,
-            @RequestParam(value = "status",required = false) TransactionStatus status,
-            @RequestParam(value = "page",defaultValue = "1") int page,
-            @RequestParam(value = "size",defaultValue = "5") int size) {
+            @RequestParam(value = "type", required = false) TransactionType type,
+            @RequestParam(value = "status", required = false) TransactionStatus status,
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "size", defaultValue = "5") int size) {
 
         return ApiResponse.<PageResponse<AdminTransactionResponse>>builder()
                 .code(1000)
@@ -268,7 +264,7 @@ public class AdminController {
     // lấy chi tiết giao dịch
     @GetMapping("/transactions/{id}")
     @PreAuthorize("hasAuthority('ADMIN_GET_TRANSACTION_DETAIL')")
-    public ApiResponse<TransactionDetailResponse> getTransactionDetail(@PathVariable Long id){
+    public ApiResponse<TransactionDetailResponse> getTransactionDetail(@PathVariable Long id) {
         return ApiResponse.<TransactionDetailResponse>builder()
                 .code(1000)
                 .message("Lấy chi tiết giao dịch thành công!")

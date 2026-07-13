@@ -1,18 +1,14 @@
 package com.NgocDan.BACKEND.controller;
 
+import org.springframework.web.bind.annotation.*;
+
 import com.NgocDan.BACKEND.dto.response.ApiResponse;
-import com.NgocDan.BACKEND.dto.response.PostResponse;
 import com.NgocDan.BACKEND.dto.response.RecommendationListResponse;
 import com.NgocDan.BACKEND.service.RecommendService;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/recommend")
@@ -32,8 +28,7 @@ public class RecommendController {
     }
 
     @PostMapping("/similar/{postId}")
-    public ApiResponse<RecommendationListResponse> getSimilarPosts(
-            @PathVariable Long postId) {
+    public ApiResponse<RecommendationListResponse> getSimilarPosts(@PathVariable Long postId) {
         return ApiResponse.<RecommendationListResponse>builder()
                 .code(1000)
                 .message("Lấy danh sách bài viết tương tự thành công!")

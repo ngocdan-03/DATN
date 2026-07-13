@@ -1,10 +1,12 @@
 package com.NgocDan.BACKEND.dto.request;
 
-import com.NgocDan.BACKEND.enums.NewsCategory;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+
+import com.NgocDan.BACKEND.enums.NewsCategory;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 

@@ -1,151 +1,137 @@
-import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import AppIcon from './AppIcon';
-import IconTextButton from './IconTextButton';
-import { createLogger } from '../../utils/logger';
-import { resolveUserAvatarUrl } from '../../utils/avatar';
+import { useEffect, useRef, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 
-const logAuthMenu = createLogger('AuthMenu');
+export default function AuthMenu() {
+  const { isAuthenticated, user, logout } = useAuth();
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef(null);
+  const location = useLocation();
+  const navigate = useNavigate();
 
-// Menu tai khoan o navbar: hien login/register hoac dropdown user.
-const AuthMenu = () => {
-	const [open, setOpen] = useState(false);
-	const menuRef = useRef(null);
-	const { isAuthenticated, user, logout } = useAuth();
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+            setOpen(false);
+            }
+        };
 
-	useEffect(() => {
-		// Dong dropdown khi click ra ngoai menu.
-		const handleOutside = (event) => {
-			if (menuRef.current && !menuRef.current.contains(event.target)) {
-				logAuthMenu('Close dropdown by outside click');
-				setOpen(false);
-			}
-		};
+        const handleEsc = (event) => {
+            if (event.key === "Escape") {
+            setOpen(false);
+            }
+        };
 
-		// Dong dropdown khi nhan phim Escape.
-		const handleEscape = (event) => {
-			if (event.key === 'Escape') {
-				logAuthMenu('Close dropdown by Escape key');
-				setOpen(false);
-			}
-		};
+        document.addEventListener("mousedown", handleClickOutside);
+        document.addEventListener("keydown", handleEsc);
 
-		document.addEventListener('click', handleOutside);
-		document.addEventListener('keydown', handleEscape);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("keydown", handleEsc);
+        };
+    }, []);
 
-		return () => {
-			document.removeEventListener('click', handleOutside);
-			document.removeEventListener('keydown', handleEscape);
-		};
-	}, []);
 
-	const displayName = user?.fullName || user?.email || 'Tài khoản';
-	const avatarUrl = resolveUserAvatarUrl(user?.avatarUrl || user?.avatar || 'default.png');
-	const fallbackAvatarUrl = resolveUserAvatarUrl('default.png');
+  // nếu local storage ko có thông tin người dùng return giao diện nút đăng nhập đăng ký
+  if (!isAuthenticated || !user) {
+  return (
+    <div className="flex items-center gap-3">
+      <Link
+        to="/login"
+        state={{ from: location }}
+        className="rounded-md border border-yellow-700 px-3 py-2 text-sm font-semibold text-yellow-800 hover:bg-yellow-50"
+      >
+        Đăng nhập
+      </Link>
+      <Link
+        to="/register"
+        className="rounded-md bg-yellow-700 px-3 py-2 text-sm font-semibold text-white hover:bg-yellow-800"
+      >
+        Đăng ký
+      </Link>
+    </div>
+  );
+}
 
-	if (!isAuthenticated || !user) {
-		logAuthMenu('Render guest menu');
-		return (
-			<div className="flex items-center gap-3">
-				<IconTextButton
-					Component={Link}
-					to="/login"
-					className="inline-flex items-center gap-2 rounded-md border border-[#735c00] px-4 py-2 text-sm font-semibold text-[#735c00] transition-colors hover:bg-[#f5f3f4]"
-					iconName="login"
-					iconClassName="h-4 w-4"
-				>
-					Đăng nhập
-				</IconTextButton>
-				<IconTextButton
-					Component={Link}
-					to="/register"
-					className="inline-flex items-center gap-2 rounded-md bg-[#735c00] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#5f4b00]"
-					iconName="userAdd"
-					iconClassName="h-4 w-4"
-				>
-					Đăng ký
-				</IconTextButton>
-			</div>
-		);
-	}
+// nếu có thông tin người dùng, return giao diện avatar và menu dropdown
 
-	return (
-		<div className="relative" ref={menuRef}>
-			<button
-				id="authmenu-trigger"
-				type="button"
-				className="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-[#f5f3f4]"
-				onClick={() => setOpen((prev) => !prev)}
-				onClickCapture={() => logAuthMenu('Toggle dropdown', { from: open, to: !open })}
-			>
-				<span className="text-sm font-semibold text-[#1b1c1d]">{displayName}</span>
-				<img
-					alt={displayName}
-					className="h-10 w-10 rounded-full border-2 border-[#e9e7e9] object-cover"
-					src={avatarUrl}
-					onError={(event) => {
-						event.currentTarget.onerror = null;
-						event.currentTarget.src = fallbackAvatarUrl;
-					}}
-				/>
-				<span className="text-[#44474c]">▾</span>
-			</button>
+  // tạo dữ liệu user
+  const displayName = user.fullName;
+  const avatar = user.avatarUrl;
+  const roles = user.roles;
+  const isAdmin = roles.includes("ADMIN");
 
-			<div
-				id="authmenu-dropdown"
-				className={`absolute right-0 top-full mt-2 w-52 rounded-lg border border-[#c4c6cd]/40 bg-white p-2 shadow-xl transition-all duration-200 ${
-					open
-						? 'visible translate-y-0 opacity-100 pointer-events-auto'
-						: 'invisible -translate-y-1 opacity-0 pointer-events-none'
-				}`}
-			>
-				<IconTextButton
-					Component={Link}
-					to="/dashboard"
-					className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-[#1b1c1d] transition-colors hover:bg-[#f5f3f4]"
-					iconName="dashboardGrid"
-					iconClassName="h-4 w-4 text-[#735c00]"
-					onClick={() => setOpen(false)}
-				>
-					Bảng điều khiển
-				</IconTextButton>
-				<IconTextButton
-					Component={Link}
-					to="/payment"
-					className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-[#1b1c1d] transition-colors hover:bg-[#f5f3f4]"
-					iconName="currencyCard"
-					iconClassName="h-4 w-4 text-[#735c00]"
-					onClick={() => setOpen(false)}
-				>
-					Thanh toan VNPay
-				</IconTextButton>
-				<IconTextButton
-					Component={Link}
-					to="/dang-tin"
-					className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-[#1b1c1d] transition-colors hover:bg-[#f5f3f4]"
-					iconName="plus"
-					iconClassName="h-4 w-4 text-[#735c00]"
-					onClick={() => setOpen(false)}
-				>
-					Đăng tin
-				</IconTextButton>
-				<IconTextButton
-					className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-[#ba1a1a] transition-colors hover:bg-[#ffdad6]"
-					iconName="logout"
-					iconClassName="h-4 w-4"
-					onClick={async () => {
-						logAuthMenu('Logout clicked');
-						await logout();
-						logAuthMenu('Logout completed, close dropdown');
-						setOpen(false);
-					}}
-				>
-					Đăng xuất
-				</IconTextButton>
-			</div>
-		</div>
-	);
-};
+return (
+  <div className="relative" ref={menuRef}>
+    <button
+      type="button"
+      onClick={() => setOpen((prev) => !prev)}
+      className="flex items-center gap-2 rounded-lg px-2 py-1 hover:bg-slate-100"
+    >
+      <img
+        src={avatar}
+        alt={displayName}
+        className="h-14 w-14 rounded-full border-2 object-cover"
+        onError={(e) => {
+          e.currentTarget.src = "https://placehold.co/40x40";
+        }}
+      />
+      <span className="text-sm font-semibold text-slate-800">{displayName}</span>
+      <svg
+        className={`h-4 w-4 text-slate-500 transition-transform ${open ? "rotate-180" : ""}`}
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        aria-hidden="true">
+        <path
+            fillRule="evenodd"
+            d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+            clipRule="evenodd"/>
+      </svg>
+    </button>
 
-export default AuthMenu;
+    {open && (
+      <div className="absolute right-0 z-50 mt-2 w-52 rounded-lg border bg-white p-2 shadow-lg">
+        <Link
+          to={isAdmin ? "/admin/dashboard" : "/user/dashboard"}
+          onClick={() => setOpen(false)}
+          className="block rounded-md px-3 py-2 text-sm hover:bg-slate-100"
+        >
+          Bảng điều khiển
+        </Link>
+
+        {!isAdmin && (
+          <>
+            <Link
+              to="/user/payment"
+              onClick={() => setOpen(false)}
+              className="block rounded-md px-3 py-2 text-sm hover:bg-slate-100"
+            >
+              Nạp tiền
+            </Link>
+            <Link
+              to="/user/post-create"
+              onClick={() => setOpen(false)}
+              className="block rounded-md px-3 py-2 text-sm hover:bg-slate-100"
+            >
+              Đăng tin
+            </Link>
+          </>
+        )}
+
+        <button
+          type="button"
+          className="mt-1 block w-full rounded-md px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+          onClick={async () => {
+            await logout();
+            setOpen(false);
+            navigate("/", { replace: true });
+          }}
+        >
+          Đăng xuất
+        </button>
+      </div>
+    )}
+  </div>
+);
+
+}

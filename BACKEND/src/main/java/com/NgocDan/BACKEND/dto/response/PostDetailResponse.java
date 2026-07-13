@@ -25,6 +25,8 @@ public class PostDetailResponse {
     String listingType;
     String legalStatus;
     String displayDate;
+    BigDecimal latitude;
+    BigDecimal longitude;
 
     OwnerResponse owner; // Thông tin người đăng
     List<String> imageUrls; // Danh sách Album ảnh

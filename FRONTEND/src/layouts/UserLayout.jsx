@@ -1,18 +1,17 @@
-import { Outlet } from 'react-router-dom';
-import Navbar from '../components/layout/Navbar';
-import Footer from '../components/layout/Footer';
+// src/layouts/UserLayout.jsx
+import { Outlet } from "react-router-dom";
+import UserSidebar from "../components/user/dashboard/UserSidebar";
 
-// Layout mac dinh cho khu vuc public/user voi navbar va footer.
-const UserLayout = () => {
-	return (
-		<div className="min-h-screen bg-[#fbf9fa] text-[#1b1c1d]">
-			<Navbar />
-			<main>
-				<Outlet />
-			</main>
-			<Footer />
-		</div>
-	);
-};
+export default function UserLayout() {
+  return (
+    <section className="mx-auto w-full max-w-[1440px] px-6 py-8 md:px-12">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]">
+        <UserSidebar />
 
-export default UserLayout;
+        <main className="min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-7">
+          <Outlet />
+        </main>
+      </div>
+    </section>
+  );
+}

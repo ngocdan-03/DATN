@@ -1,13 +1,15 @@
 package com.NgocDan.BACKEND.service.kafka;
 
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Service;
+
 import com.NgocDan.BACKEND.model.kafka.PostStatusEmailEvent;
 import com.NgocDan.BACKEND.service.EmailService;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor

@@ -56,7 +56,12 @@ public enum ErrorCode {
     UPLOAD_SIZE_EXCEEDED(3035, "Kich thuoc file vuot qua gioi han cho phep", HttpStatus.BAD_REQUEST),
     SOURCE_NAME_TOO_LONG(3036, "Ten nguon goc khong duoc qua 100 ky tu", HttpStatus.BAD_REQUEST),
     NEWS_CATEGORY_REQUIRED(3037, "Danh muc tin tuc khong duoc de trong", HttpStatus.BAD_REQUEST),
-
+    LATITUDE_TOO_LOW(3038, "Vi do phai lon hon hoac bang -90.0", HttpStatus.BAD_REQUEST),
+    LATITUDE_TOO_HIGH(3039, "Vi do phai nho hon hoac bang 90.0", HttpStatus.BAD_REQUEST),
+    LONGITUDE_TOO_LOW(3040, "Kinh do phai lon hon hoac bang -180.0", HttpStatus.BAD_REQUEST),
+    LONGITUDE_TOO_HIGH(3041, "Kinh do phai nho hon hoac bang 180.0", HttpStatus.BAD_REQUEST),
+    LATITUDE_REQUIRED(3042, "Vi do khong duoc de trong", HttpStatus.BAD_REQUEST),
+    LONGITUDE_REQUIRED(3043, "Kinh do khong duoc de trong", HttpStatus.BAD_REQUEST),
     // 1xxx: loi nghiep vu
     USER_EXISTED(1006, "Email nay da duoc dang ky", HttpStatus.BAD_REQUEST),
     PHONE_EXISTED(1007, "So dien thoai nay da duoc su dung", HttpStatus.BAD_REQUEST),

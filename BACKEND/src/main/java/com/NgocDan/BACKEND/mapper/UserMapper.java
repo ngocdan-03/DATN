@@ -3,10 +3,10 @@ package com.NgocDan.BACKEND.mapper;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.NgocDan.BACKEND.dto.response.AdminUserResponse;
 import org.mapstruct.*;
 
 import com.NgocDan.BACKEND.dto.request.UserUpdateRequest;
+import com.NgocDan.BACKEND.dto.response.AdminUserResponse;
 import com.NgocDan.BACKEND.dto.response.UserDashboardResponse;
 import com.NgocDan.BACKEND.dto.response.UserResponse;
 import com.NgocDan.BACKEND.model.Role;

@@ -9,10 +9,7 @@ import org.springframework.kafka.config.TopicBuilder;
 public class KafkaTopicConfig {
     @Bean
     public NewTopic otpEmailTopic() {
-        return TopicBuilder.name("otp_email_topic")
-                .partitions(1)
-                .replicas(1)
-                .build();
+        return TopicBuilder.name("otp_email_topic").partitions(1).replicas(1).build();
     }
 
     // thanh toán
@@ -24,7 +21,7 @@ public class KafkaTopicConfig {
                 .build();
     }
 
-    //tương tác của người dùng
+    // tương tác của người dùng
     @Bean
     public NewTopic userInteractionTopic() {
         return TopicBuilder.name("user_interaction_topic")
@@ -53,9 +50,6 @@ public class KafkaTopicConfig {
 
     @Bean
     public NewTopic postDeletedTopic() {
-        return TopicBuilder.name("post_deleted_topic")
-                .partitions(1)
-                .replicas(1)
-                .build();
+        return TopicBuilder.name("post_deleted_topic").partitions(1).replicas(1).build();
     }
 }

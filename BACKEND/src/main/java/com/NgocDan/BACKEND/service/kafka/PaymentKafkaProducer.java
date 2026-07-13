@@ -1,8 +1,9 @@
 package com.NgocDan.BACKEND.service.kafka;
 
-import com.NgocDan.BACKEND.model.kafka.PaymentEvent;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+
+import com.NgocDan.BACKEND.model.kafka.PaymentEvent;
 
 @Service
 public class PaymentKafkaProducer extends BaseKafkaProducer<PaymentEvent> {

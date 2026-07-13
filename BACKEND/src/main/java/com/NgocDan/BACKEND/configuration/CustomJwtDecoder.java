@@ -2,6 +2,9 @@ package com.NgocDan.BACKEND.configuration;
 
 import javax.crypto.spec.SecretKeySpec;
 
+import jakarta.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -28,6 +31,10 @@ public class CustomJwtDecoder implements JwtDecoder {
 
     private final InvalidatedTokenRedisService invalidatedTokenRedisService;
     private final UserRepository userRepository;
+
+    // 🌟 BỔ SUNG: Tiêm Request hiện tại vào để đính kèm thông điệp lỗi vượt rào Filter
+    @Autowired
+    private HttpServletRequest request;
 
     private NimbusJwtDecoder nimbusJwtDecoder = null;
 
@@ -67,10 +74,12 @@ public class CustomJwtDecoder implements JwtDecoder {
             return jwt;
 
         } catch (JwtException e) {
-            // Ném lỗi trực tiếp để EntryPoint bắt được message
+            // 🌟 BỔ SUNG: Lưu lại nguyên nhân thực tế vào Request Attribute trước khi ném ra ngoài
+            request.setAttribute("jwt_exception_cause", e.getMessage());
             throw e;
         } catch (Exception e) {
             log.error("Lỗi hệ thống khi decode JWT: ", e);
+            request.setAttribute("jwt_exception_cause", "INVALID_TOKEN");
             throw new JwtException("INVALID_TOKEN");
         }
     }

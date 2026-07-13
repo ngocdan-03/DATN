@@ -1,7 +1,6 @@
 package com.NgocDan.BACKEND.dto.request;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import jakarta.validation.constraints.*;
 
@@ -9,7 +8,6 @@ import com.NgocDan.BACKEND.enums.LegalStatus;
 import com.NgocDan.BACKEND.enums.ListingType;
 import com.NgocDan.BACKEND.enums.PropertyType;
 import com.NgocDan.BACKEND.validator.PropertyConstraint;
-import com.NgocDan.BACKEND.validator.UrlConstraint;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -35,9 +33,9 @@ public class PostCreateRequest {
     @NotBlank(message = "ADDRESS_REQUIRED")
     String streetAddress;
 
-//    @NotBlank(message = "THUMBNAIL_REQUIRED")
-//    @UrlConstraint
-//    String thumbnailUrl;
+    //    @NotBlank(message = "THUMBNAIL_REQUIRED")
+    //    @UrlConstraint
+    //    String thumbnailUrl;
 
     @NotNull(message = "PRICE_REQUIRED")
     @DecimalMin(value = "10000000", message = "PRICE_TOO_LOW") // Ví dụ: giá tối thiểu 10.000.000 vnđ
@@ -64,7 +62,15 @@ public class PostCreateRequest {
     @NotNull(message = "WARD_ID_REQUIRED")
     Integer wardId;
 
-//    @NotNull(message = "IMAGES_REQUIRED")
-//    @Size(min = 1, message = "AT_LEAST_ONE_IMAGE") // Phải có ít nhất 1 ảnh chi tiết
-//    List<String> imageUrls;
+    @DecimalMin(value = "-90.0", message = "LATITUDE_TOO_LOW")
+    @DecimalMax(value = "90.0", message = "LATITUDE_TOO_HIGH")
+    BigDecimal latitude;
+
+    @DecimalMin(value = "-180.0", message = "LONGITUDE_TOO_LOW")
+    @DecimalMax(value = "180.0", message = "LONGITUDE_TOO_HIGH")
+    BigDecimal longitude;
+
+    //    @NotNull(message = "IMAGES_REQUIRED")
+    //    @Size(min = 1, message = "AT_LEAST_ONE_IMAGE") // Phải có ít nhất 1 ảnh chi tiết
+    //    List<String> imageUrls;
 }

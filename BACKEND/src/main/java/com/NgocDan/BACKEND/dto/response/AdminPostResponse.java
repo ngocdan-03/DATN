@@ -1,14 +1,14 @@
 package com.NgocDan.BACKEND.dto.response;
 
-import com.NgocDan.BACKEND.enums.LegalStatus;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 import com.NgocDan.BACKEND.enums.ListingType;
 import com.NgocDan.BACKEND.enums.PostStatus;
 import com.NgocDan.BACKEND.enums.PropertyType;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Data
 @Builder

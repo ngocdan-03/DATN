@@ -18,8 +18,11 @@ public class PostResponse {
     String thumbnailUrl;
     Integer bedrooms;
     Integer bathrooms;
+    String streetAddress;
     String wardName; // Sẽ map từ ward.name
     String propertyType;
     String listingType;
     String displayDate; // Chuỗi ngày đã định dạng dd/MM/yyyy
+    BigDecimal latitude;
+    BigDecimal longitude;
 }

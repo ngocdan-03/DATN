@@ -1,16 +1,24 @@
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
-// Bao ve route yeu cau dang nhap; guest se duoc dieu huong den trang login.
-const ProtectedRoute = ({ children }) => {
-	const location = useLocation();
-	const { isAuthenticated } = useAuth();
-
-	if (!isAuthenticated) {
-		return <Navigate to="/login" replace state={{ from: location.pathname }} />;
-	}
-
-	return children;
-};
-
-export default ProtectedRoute;
+export default function ProtectedRoute({ allowedRoles = [] }){
+    const auth = useAuth();
+    const location = useLocation();
+    const isLoading = auth?.isLoading ?? false;
+    const isAuthenticated = auth?.isAuthenticated ?? false;
+    const roles = auth?.user?.roles || [];
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
+    if (!isAuthenticated) {
+        console.log("không có isAuthenticated, chuyển hướng về login");
+        return <Navigate to="/login" state={{ from: location }} replace />;
+    }
+    if (allowedRoles.length > 0){
+        const hasRole = allowedRoles.some((role) => roles.includes(role));
+        if (!hasRole) {
+            return <Navigate to="/unauthorized" replace />;
+        }
+    }
+    return <Outlet />;
+}

@@ -1,72 +1,61 @@
-import axios from 'axios';
-import { createLogger } from '../utils/logger';
+import { publicClient } from "./axiosClients";  
 
-const NEWS_BASE_URL = 'http://localhost:8080/real-estate/news';
-const logNewsService = createLogger('NewsService');
+async function getAllNews({ keyword = "", category = "", size = 6, page = 1 }) {
+    try {
+        const response = await publicClient.get("/news/all", {
+            params: {
+                keyword,
+                category,
+                size,
+                page,
+            },
+        });
 
-// Lay danh sach tin tuc theo trang, ho tro tim kiem voi keyword va category.
-export const getAllNews = async ({ page = 1, size = 6, keyword = '', category = '' }) => {
-	const normalizedKeyword = keyword.trim();
-	const normalizedCategory = category.trim().toUpperCase();
-	logNewsService('Request getAllNews', { page, size, keyword: normalizedKeyword, category: normalizedCategory });
-
-	try {
-		const response = await axios.get(`${NEWS_BASE_URL}/all`, {
-			params: {
-				page,
-				size,
-				...(normalizedKeyword ? { keyword: normalizedKeyword } : {}),
-				...(normalizedCategory ? { category: normalizedCategory } : {}),
-			},
-		});
-
-		logNewsService('Response getAllNews', {
-			httpStatus: response.status,
-			code: response.data?.code,
-			keyword: normalizedKeyword,
-			category: normalizedCategory,
-			currentPage: response.data?.result?.currentPage,
-			totalPages: response.data?.result?.totalPages,
-			items: response.data?.result?.data?.length || 0,
-		});
-
-		return response;
-	} catch (error) {
-		logNewsService('Error getAllNews', {
-			httpStatus: error.response?.status,
-			code: error.response?.data?.code,
-			message: error.response?.data?.message || error.message,
-			page,
-			size,
-			keyword: normalizedKeyword,
-			category: normalizedCategory,
-		});
-		throw error;
-	}
+        const data = response?.data;
+        if (!data || data.code !== 1000) {
+            const err = new Error(data?.message || "Lấy danh sách tin tức thất bại");
+            err.code = data?.code;
+            throw err;
+        }
+        return {
+            code: data?.code,
+            message: data?.message || "Lấy danh sách tin tức thành công",
+            result: data?.result,
+        }
+    }catch (error) {
+        const apiCode = error?.response?.data?.code;
+        const apiMessage = error?.response?.data?.message;
+        const err = new Error(apiMessage || error?.message || "Lấy danh sách tin tức thất bại");
+        err.code = apiCode;
+        throw err;
+    }
 };
 
-// Lay chi tiet mot tin tuc theo id.
-export const getNewsDetail = async (id) => {
-	logNewsService('Request getNewsDetail', { id });
+// lấy chi tiết tin tức
+async function getNewsDetail(newsId) {
+    try {
+        const response = await publicClient.get(`/news/${newsId}`);
+        const data = response?.data;
+        if (!data || data.code !== 1000) {
+            const err = new Error(data?.message || "Lấy chi tiết tin tức thất bại");
+            err.code = data?.code;
+            throw err;
+        }
+        return {
+            code: data?.code,
+            message: data?.message || "Lấy chi tiết tin tức thành công",
+            result: data?.result,
+        }
+    }catch (error) {
+        const apiCode = error?.response?.data?.code;
+        const apiMessage = error?.response?.data?.message;
+        const err = new Error(apiMessage || error?.message || "Lấy chi tiết tin tức thất bại");
+        err.code = apiCode;
+        throw err;
+    }
+}
 
-	try {
-		const response = await axios.get(`${NEWS_BASE_URL}/${id}`);
-
-		logNewsService('Response getNewsDetail', {
-			httpStatus: response.status,
-			code: response.data?.code,
-			id: response.data?.result?.id,
-			title: response.data?.result?.title,
-		});
-
-		return response;
-	} catch (error) {
-		logNewsService('Error getNewsDetail', {
-			httpStatus: error.response?.status,
-			code: error.response?.data?.code,
-			message: error.response?.data?.message || error.message,
-			id,
-		});
-		throw error;
-	}
-};
+export const newsService = {
+    getAllNews,
+    getNewsDetail,
+}

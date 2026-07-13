@@ -80,6 +80,12 @@ public class Post {
     @Enumerated(EnumType.STRING)
     PostStatus status = PostStatus.PENDING;
 
+    @Column(name = "latitude", precision = 10, scale = 8)
+    BigDecimal latitude;
+
+    @Column(name = "longitude", precision = 11, scale = 8)
+    BigDecimal longitude;
+
     @CreationTimestamp
     LocalDateTime createdAt;
 

@@ -1,14 +1,15 @@
 package com.NgocDan.BACKEND.dto.request;
 
+import java.math.BigDecimal;
+
+import jakarta.validation.constraints.*;
+
 import com.NgocDan.BACKEND.enums.LegalStatus;
 import com.NgocDan.BACKEND.enums.ListingType;
 import com.NgocDan.BACKEND.enums.PropertyType;
-import jakarta.validation.constraints.*;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -54,4 +55,11 @@ public class PostUpdateRequest {
     @NotBlank(message = "ADDRESS_REQUIRED")
     String streetAddress;
 
+    @DecimalMin(value = "-90.0", message = "LATITUDE_TOO_LOW")
+    @DecimalMax(value = "90.0", message = "LATITUDE_TOO_HIGH")
+    BigDecimal latitude;
+
+    @DecimalMin(value = "-180.0", message = "LONGITUDE_TOO_LOW")
+    @DecimalMax(value = "180.0", message = "LONGITUDE_TOO_HIGH")
+    BigDecimal longitude;
 }

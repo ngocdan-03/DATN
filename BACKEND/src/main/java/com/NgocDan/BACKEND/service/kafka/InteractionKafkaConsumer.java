@@ -1,5 +1,9 @@
 package com.NgocDan.BACKEND.service.kafka;
 
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.NgocDan.BACKEND.model.Post;
 import com.NgocDan.BACKEND.model.User;
 import com.NgocDan.BACKEND.model.UserInteraction;
@@ -7,13 +11,11 @@ import com.NgocDan.BACKEND.model.kafka.InteractionEvent;
 import com.NgocDan.BACKEND.repository.PostRepository;
 import com.NgocDan.BACKEND.repository.UserInteractionRepository;
 import com.NgocDan.BACKEND.repository.UserRepository;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -46,8 +48,11 @@ public class InteractionKafkaConsumer {
                     .build();
 
             userInteractionRepository.save(interaction);
-            log.info("[Kafka] Da luu tuong tac {} cua User ID {} tren Post ID {}",
-                    payload.getInteractionType(), payload.getUserId(), payload.getPostId());
+            log.info(
+                    "[Kafka] Da luu tuong tac {} cua User ID {} tren Post ID {}",
+                    payload.getInteractionType(),
+                    payload.getUserId(),
+                    payload.getPostId());
 
         } catch (Exception e) {
             log.error("[Kafka] Loi khi luu tuong tac: {}", e.getMessage());

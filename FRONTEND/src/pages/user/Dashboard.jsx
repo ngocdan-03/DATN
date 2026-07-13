@@ -1,97 +1,175 @@
-import { useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import AppIcon from '../../components/common/AppIcon';
-import DashboardEngagementSection from '../../components/user/dashboard/DashboardEngagementSection';
-import DashboardFinanceSection from '../../components/user/dashboard/DashboardFinanceSection';
-import DashboardOverviewSection from '../../components/user/dashboard/DashboardOverviewSection';
-import DashboardPostsSection from '../../components/user/dashboard/DashboardPostsSection';
-import DashboardSettingsSection from '../../components/user/dashboard/DashboardSettingsSection';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  ArcElement,
+  CategoryScale,
+  Chart as ChartJS,
+  Filler,
+  Legend,
+  LineElement,
+  LinearScale,
+  PointElement,
+  Tooltip,
+} from 'chart.js';
+import { POST_STATUS } from '../../constants/posts';
+import { dashboardService } from '../../services/dashboardService';
+import { formatCurrencyVND, formatInteger } from '../../utils/format';
+import StatCard from '../../components/user/dashboard/StatCard';
+import HeaderCard from '../../components/user/dashboard/HeaderCard';
+import ViewTrendChart from '../../components/user/dashboard/ViewTrendChart';
+import StatusDoughnutChart from '../../components/user/dashboard/StatusDoughnutChart';
 
-const DASHBOARD_SECTIONS = [
-	{ key: 'overview', label: 'Tổng quan', iconName: 'dashboardGrid' },
-	{ key: 'posts', label: 'Quản lý tin', iconName: 'article' },
-	{ key: 'finance', label: 'Quản lý tài chính', iconName: 'currencyCard' },
-	{ key: 'engagement', label: 'Tương tác và cá nhân hóa', iconName: 'chat' },
-	{ key: 'settings', label: 'Thiết lập tài khoản', iconName: 'user' },
-];
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, Tooltip, Legend, Filler);
 
-const Dashboard = () => {
-	const [searchParams, setSearchParams] = useSearchParams();
+export default function DashBoard() {
+  const [overview, setOverview] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-	const activeSection = useMemo(() => {
-		const tabFromQuery = searchParams.get('tab');
-		return DASHBOARD_SECTIONS.some((item) => item.key === tabFromQuery) ? tabFromQuery : 'overview';
-	}, [searchParams]);
+  useEffect(() => {
+    const fetchOverview = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const response = await dashboardService.getOverview();
+        if (response.code === 1000 && response.overview) {
+          setOverview(response.overview);
+        } else {
+          setError(response.message || 'Không thể tải dữ liệu tổng quan.');
+        }
+      } catch (err) {
+        setError(err?.response?.data?.message|| err?.message || 'Không thể tải dữ liệu tổng quan.');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-	const handleSectionChange = (sectionKey) => {
-		setSearchParams((previousParams) => {
-			const nextParams = new URLSearchParams(previousParams);
-			nextParams.set('tab', sectionKey);
-			if (sectionKey !== 'posts') {
-				nextParams.delete('postsKeyword');
-				nextParams.delete('postsStatus');
-				nextParams.delete('postsPage');
-			}
-			return nextParams;
-		});
-	};
+    fetchOverview();
+  }, []);
 
-	const renderActiveSection = () => {
-		switch (activeSection) {
-			case 'overview':
-				return <DashboardOverviewSection />;
-			case 'posts':
-				return <DashboardPostsSection />;
-			case 'finance':
-				return <DashboardFinanceSection />;
-			case 'engagement':
-				return <DashboardEngagementSection />;
-			case 'settings':
-				return <DashboardSettingsSection />;
-			default:
-				return <DashboardOverviewSection />;
-		}
-	};
+  const viewTrend = useMemo(() => (Array.isArray(overview?.viewTrend) ? overview.viewTrend : []), [overview?.viewTrend]);
+  const statusDistribution = useMemo(
+    () => (Array.isArray(overview?.statusDistribution) ? overview.statusDistribution : []),
+    [overview?.statusDistribution]
+  );
 
-	const activeSectionLabel = DASHBOARD_SECTIONS.find((item) => item.key === activeSection)?.label || 'Tổng quan';
+  const viewTrendChartData = useMemo(
+    () => ({
+      labels: viewTrend.map((item) => item?.label || '--/--'),
+      datasets: [
+        {
+          label: 'Lượt xem',
+          data: viewTrend.map((item) => Number(item?.value || 0)),
+          borderColor: '#0d4f9f',
+          backgroundColor: 'rgba(13, 79, 159, 0.14)',
+          fill: true,
+          tension: 0.35,
+          pointRadius: 3,
+          pointHoverRadius: 4,
+        },
+      ],
+    }),
+    [viewTrend]
+  );
 
-	return (
-		<main className="mx-auto w-full max-w-[1440px] px-4 py-8 md:px-8 md:py-10">
-			<div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
-				<aside className="rounded-2xl border border-[#dbe8f6] bg-white p-4 shadow-[0_20px_40px_-32px_rgba(2,8,20,0.45)] lg:sticky lg:top-24 lg:h-fit">
-					<h2 className="px-3 pb-3 text-sm font-bold uppercase tracking-[0.12em] text-[#64748b]">Dashboard User</h2>
-					<nav className="space-y-1.5">
-						{DASHBOARD_SECTIONS.map((item) => {
-							const isActive = item.key === activeSection;
+  const statusDoughnutChartData = useMemo(() => {
+    if (!statusDistribution.length) {
+      return {
+        labels: ['Không có dữ liệu'],
+        datasets: [
+          {
+            data: [1],
+            backgroundColor: ['#cbd5e1'],
+            borderColor: ['#ffffff'],
+            borderWidth: 2,
+          },
+        ],
+      };
+    }
 
-							return (
-								<button
-									key={item.key}
-									type="button"
-									onClick={() => handleSectionChange(item.key)}
-									className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold transition ${
-										isActive ? 'bg-[#0d4f9f] text-white shadow' : 'text-[#1e293b] hover:bg-[#eff6ff]'
-									}`}
-								>
-									<AppIcon name={item.iconName} className="h-4 w-4" />
-									<span>{item.label}</span>
-								</button>
-							);
-						})}
-					</nav>
-				</aside>
+    return {
+      labels: statusDistribution.map((item) => POST_STATUS[item?.status]?.label || item?.status || 'Khác'),
+      datasets: [
+        {
+          data: statusDistribution.map((item) => Number(item?.count || 0)),
+          backgroundColor: statusDistribution.map((item) => POST_STATUS[item?.status]?.color || '#64748b'),
+          borderColor: ['#ffffff'],
+          borderWidth: 2,
+        },
+      ],
+    };
+  }, [statusDistribution]);
 
-				<section className="space-y-5">
-					<header className="rounded-2xl border border-[#dbe8f6] bg-white p-5 shadow-[0_20px_40px_-32px_rgba(2,8,20,0.45)]">
-						<p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#64748b]">Khu vực làm việc</p>
-						<h1 className="mt-2 text-2xl font-extrabold text-[#0f172a]">{activeSectionLabel}</h1>
-					</header>
+  const lineChartOptions = useMemo(
+    () => ({
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { precision: 0 },
+          grid: { color: 'rgba(148, 163, 184, 0.25)' },
+        },
+        x: {
+          grid: { display: false },
+        },
+      },
+    }),
+    []
+  );
 
-					{renderActiveSection()}
-				</section>
-			</div>
-		</main>
-	);
+  const doughnutChartOptions = useMemo(
+    () => ({
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            boxWidth: 14,
+            padding: 12,
+          },
+        },
+      },
+    }),
+    []
+  );
+
+  if (loading) {
+    return <div>Đang tải dữ liệu tổng quan...</div>;
+  }
+
+  if (error) {
+    return <div className="text-red-500">Lỗi: {error}</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <HeaderCard title="Tổng quan" />
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <StatCard
+          title="Số dư ví"
+          value={overview?.balance}
+          formatValue={formatCurrencyVND}
+        />
+        <StatCard
+          title="Số bài đăng đang sống"
+          value={overview?.livePostsCount}
+          formatValue={formatInteger}
+        />
+        <StatCard
+          title="Lượt xem tin"
+          value={overview?.totalViews}
+          formatValue={formatInteger}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+        <ViewTrendChart data={viewTrendChartData} options={lineChartOptions} />
+        <StatusDoughnutChart data={statusDoughnutChartData} options={doughnutChartOptions} />
+      </div>
+    </div>
+  );
 };
-
-export default Dashboard;

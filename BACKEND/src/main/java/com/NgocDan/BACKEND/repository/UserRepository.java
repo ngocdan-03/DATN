@@ -25,23 +25,20 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // cho admin
     // Số user mới trong tháng
-    @Query("SELECT COUNT(u) FROM User u " +
-            "WHERE YEAR(u.createdAt) = :year " +
-            "AND MONTH(u.createdAt) = :month")
+    @Query("SELECT COUNT(u) FROM User u " + "WHERE YEAR(u.createdAt) = :year " + "AND MONTH(u.createdAt) = :month")
     long countNewUsersByMonth(@Param("year") int year, @Param("month") int month);
 
     // Tổng số user
     long count();
 
     // lấy all user cho quản lý user
-    @Query("SELECT u FROM User u " +
-            "WHERE (:keyword IS NULL OR " +
-            "LOWER(u.fullName) LIKE LOWER(CONCAT('%',:keyword,'%')) OR " +
-            "LOWER(u.email) LIKE LOWER(CONCAT('%',:keyword,'%')) OR " +
-            "u.phone LIKE CONCAT('%',:keyword,'%')) " +
-            "AND (:isVerified IS NULL OR u.isVerified = :isVerified) " +
-            "AND (:isLocked IS NULL OR u.isLocked = :isLocked) " +
-            "ORDER BY u.createdAt DESC")
+    @Query("SELECT u FROM User u " + "WHERE (:keyword IS NULL OR "
+            + "LOWER(u.fullName) LIKE LOWER(CONCAT('%',:keyword,'%')) OR "
+            + "LOWER(u.email) LIKE LOWER(CONCAT('%',:keyword,'%')) OR "
+            + "u.phone LIKE CONCAT('%',:keyword,'%')) "
+            + "AND (:isVerified IS NULL OR u.isVerified = :isVerified) "
+            + "AND (:isLocked IS NULL OR u.isLocked = :isLocked) "
+            + "ORDER BY u.createdAt DESC")
     Page<User> findAllForAdmin(
             @Param("keyword") String keyword,
             @Param("isVerified") Boolean isVerified,

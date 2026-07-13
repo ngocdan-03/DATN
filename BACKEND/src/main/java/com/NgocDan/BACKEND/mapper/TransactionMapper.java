@@ -4,11 +4,11 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import com.NgocDan.BACKEND.dto.response.AdminTransactionResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
+import com.NgocDan.BACKEND.dto.response.AdminTransactionResponse;
 import com.NgocDan.BACKEND.dto.response.TransactionDetailResponse;
 import com.NgocDan.BACKEND.dto.response.TransactionResponse;
 import com.NgocDan.BACKEND.model.Transaction;
@@ -57,5 +57,4 @@ public interface TransactionMapper {
         if (id == null) return null;
         return "INV-" + String.format("%06d", id); // Tạo mã dạng INV-000102
     }
-
 }

@@ -1,18 +1,20 @@
 package com.NgocDan.BACKEND.service.kafka;
 
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.NgocDan.BACKEND.enums.TransactionStatus;
 import com.NgocDan.BACKEND.model.Transaction;
 import com.NgocDan.BACKEND.model.User;
 import com.NgocDan.BACKEND.model.kafka.PaymentEvent;
 import com.NgocDan.BACKEND.repository.TransactionRepository;
 import com.NgocDan.BACKEND.repository.UserRepository;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +30,9 @@ public class PaymentKafkaConsumer {
     public void listen(PaymentEvent payload) {
         log.info("[Kafka] Bat dau xu ly thanh toan cho ma giao dich: {}", payload.getVnpTxnRef());
         try {
-            Transaction transaction = transactionRepository.findByVnpTxnRef(payload.getVnpTxnRef()).orElse(null);
+            Transaction transaction = transactionRepository
+                    .findByVnpTxnRef(payload.getVnpTxnRef())
+                    .orElse(null);
 
             // Chỉ cộng tiền nếu trạng thái đang là PENDING (Chống cộng tiền 2 lần)
             if (transaction == null || !TransactionStatus.PENDING.equals(transaction.getStatus())) {
@@ -56,7 +60,8 @@ public class PaymentKafkaConsumer {
             transactionRepository.save(transaction);
 
         } catch (Exception e) {
-            log.error("[Kafka] Loi nghiem trong khi xu ly thanh toan ma {}: {}", payload.getVnpTxnRef(), e.getMessage());
+            log.error(
+                    "[Kafka] Loi nghiem trong khi xu ly thanh toan ma {}: {}", payload.getVnpTxnRef(), e.getMessage());
         }
     }
 }

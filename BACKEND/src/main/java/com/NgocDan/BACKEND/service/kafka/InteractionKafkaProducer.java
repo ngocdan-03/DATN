@@ -1,8 +1,9 @@
 package com.NgocDan.BACKEND.service.kafka;
 
-import com.NgocDan.BACKEND.model.kafka.InteractionEvent;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+
+import com.NgocDan.BACKEND.model.kafka.InteractionEvent;
 
 @Service
 public class InteractionKafkaProducer extends BaseKafkaProducer<InteractionEvent> {

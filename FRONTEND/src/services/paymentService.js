@@ -1,54 +1,35 @@
-import axios from 'axios';
-import { createLogger } from '../utils/logger';
+import { privateClient } from "./axiosClients";
 
-const PAYMENT_BASE_URL = 'http://localhost:8080/real-estate/payment';
-const logPaymentService = createLogger('PaymentService');
+async function createVnpayUrl(payload) {
+  try {
+    const response = await privateClient.post("/payment/create-vnpay-url", payload);
 
-export const createVNPayPaymentUrl = async ({ amount, description }, accessToken) => {
-	const requestUrl = `${PAYMENT_BASE_URL}/create-vnpay-url`;
-	const token = accessToken || localStorage.getItem('accessToken');
+    const data = response?.data;
+    if (!data || data.code !== 1000) {
+      const err = new Error(data?.message || "Tạo URL thanh toán thất bại");
+      err.code = data?.code;
+      throw err;
+    }
 
-	if (!token) {
-		const noTokenError = new Error('Thieu accessToken cho thao tac thanh toan.');
-		noTokenError.code = 'NO_ACCESS_TOKEN';
-		throw noTokenError;
-	}
+    const paymentUrl = data?.result?.paymentUrl;
+    if (!paymentUrl) {
+      throw new Error("Không nhận được paymentUrl từ hệ thống");
+    }
 
-	const payload = {
-		amount: Number(amount),
-		description: description?.trim() || '',
-	};
+    return {
+      message: data.message || "Tạo URL thanh toán thành công",
+      paymentUrl,
+    };
+  } catch (error) {
+    const apiCode = error?.response?.data?.code;
+    const apiMessage = error?.response?.data?.message;
 
-	logPaymentService('Request createVNPayPaymentUrl', {
-		requestUrl,
-		hasAccessToken: Boolean(token),
-		amount: payload.amount,
-		description: payload.description,
-	});
+    const err = new Error(apiMessage || error?.message || "Tạo URL thanh toán thất bại");
+    err.code = apiCode;
+    throw err;
+  }
+}
 
-	try {
-		const response = await axios.post(requestUrl, payload, {
-			headers: {
-				Authorization: `Bearer ${token}`,
-			},
-		});
-
-		logPaymentService('Response createVNPayPaymentUrl', {
-			httpStatus: response.status,
-			code: response.data?.code,
-			message: response.data?.message,
-			hasPaymentUrl: Boolean(response.data?.result?.paymentUrl),
-		});
-
-		return response;
-	} catch (error) {
-		logPaymentService('Error createVNPayPaymentUrl', {
-			httpStatus: error.response?.status,
-			code: error.response?.data?.code || error.code,
-			message: error.response?.data?.message || error.message,
-			requestUrl,
-			hasAccessToken: Boolean(token),
-		});
-		throw error;
-	}
+export const paymentService = {
+  createVnpayUrl,
 };

@@ -1,11 +1,11 @@
+import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import './services/api'
+import 'leaflet/dist/leaflet.css';
 import App from './App.jsx'
 
-// Khoi tao React root va render ung dung.
 createRoot(document.getElementById('root')).render(
-  // <StrictMode>
+  <StrictMode>
     <App />
-  // </StrictMode>,
+  </StrictMode>,
 )

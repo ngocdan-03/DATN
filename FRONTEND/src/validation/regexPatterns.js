@@ -1,4 +1,5 @@
-// Regex patterns dong bo voi BE de validate dau vao o FE.
+// các regex giống BE
+
 export const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|vn|com\.vn|net|edu\.vn|org\.vn)$/;
 export const FULL_NAME_REGEX = /^[\p{L}]+(\s[\p{L}]+)+$/u;
 export const OTP_REGEX = /^[0-9]{6}$/;

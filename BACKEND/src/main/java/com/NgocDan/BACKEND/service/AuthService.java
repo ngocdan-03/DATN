@@ -5,7 +5,6 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-import com.NgocDan.BACKEND.service.kafka.EmailKafkaProducer;
 import jakarta.transaction.Transactional;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,6 +30,7 @@ import com.NgocDan.BACKEND.model.redis.OtpEmail;
 import com.NgocDan.BACKEND.model.redis.RefreshToken;
 import com.NgocDan.BACKEND.repository.RoleRepository;
 import com.NgocDan.BACKEND.repository.UserRepository;
+import com.NgocDan.BACKEND.service.kafka.EmailKafkaProducer;
 import com.NgocDan.BACKEND.service.redis.InvalidatedTokenRedisService;
 import com.NgocDan.BACKEND.service.redis.OtpRedisService;
 import com.NgocDan.BACKEND.service.redis.RefreshTokenRedisService;
@@ -195,7 +195,7 @@ public class AuthService {
                 OtpEmail.builder().email(email).otp(otp).purpose(purpose).build();
 
         otpRedisService.save(otpEmail, 180L);
-//        emailService.sendOtpEmail(otpEmail);
+        //        emailService.sendOtpEmail(otpEmail);
         emailKafkaProducer.publishOtp(otpEmail);
     }
 

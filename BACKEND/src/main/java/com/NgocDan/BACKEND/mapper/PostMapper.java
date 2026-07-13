@@ -4,18 +4,18 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import com.NgocDan.BACKEND.dto.request.PostUpdateRequest;
-import com.NgocDan.BACKEND.dto.response.AdminPostResponse;
-import com.NgocDan.BACKEND.dto.response.PostEditResponse;
-import com.NgocDan.BACKEND.model.kafka.PostApprovedEvent;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
 import com.NgocDan.BACKEND.dto.request.PostCreateRequest;
+import com.NgocDan.BACKEND.dto.request.PostUpdateRequest;
+import com.NgocDan.BACKEND.dto.response.AdminPostResponse;
 import com.NgocDan.BACKEND.dto.response.PostDetailResponse;
+import com.NgocDan.BACKEND.dto.response.PostEditResponse;
 import com.NgocDan.BACKEND.dto.response.PostResponse;
 import com.NgocDan.BACKEND.model.Post;
-import org.mapstruct.MappingTarget;
+import com.NgocDan.BACKEND.model.kafka.PostApprovedEvent;
 
 @Mapper(componentModel = "spring")
 public interface PostMapper {
@@ -58,11 +58,10 @@ public interface PostMapper {
     @Mapping(target = "wardId", source = "ward.id")
     @Mapping(target = "imageUrls", expression = "java(mapPostImagesToStrings(post))")
     PostEditResponse toPostEditResponse(Post post);
+
     default List<String> mapPostImagesToStrings(Post post) {
         if (post.getImages() == null) return null;
-        return post.getImages().stream()
-                .map(img -> img.getImageUrl())
-                .toList();
+        return post.getImages().stream().map(img -> img.getImageUrl()).toList();
     }
 
     // cho update

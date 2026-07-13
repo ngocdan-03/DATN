@@ -6,11 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.NgocDan.BACKEND.dto.request.PostUpdateRequest;
-import com.NgocDan.BACKEND.model.kafka.InteractionEvent;
-import com.NgocDan.BACKEND.model.kafka.PostDeletedEvent;
-import com.NgocDan.BACKEND.service.kafka.InteractionKafkaProducer;
-import com.NgocDan.BACKEND.service.kafka.PostDeletedKafkaProducer;
 import jakarta.transaction.Transactional;
 
 import org.springframework.data.domain.Page;
@@ -18,15 +13,21 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.NgocDan.BACKEND.dto.request.PostCreateRequest;
+import com.NgocDan.BACKEND.dto.request.PostUpdateRequest;
 import com.NgocDan.BACKEND.dto.response.*;
 import com.NgocDan.BACKEND.enums.*;
 import com.NgocDan.BACKEND.exception.AppException;
 import com.NgocDan.BACKEND.exception.ErrorCode;
 import com.NgocDan.BACKEND.mapper.PostMapper;
 import com.NgocDan.BACKEND.model.*;
+import com.NgocDan.BACKEND.model.kafka.InteractionEvent;
+import com.NgocDan.BACKEND.model.kafka.PostDeletedEvent;
 import com.NgocDan.BACKEND.repository.*;
+import com.NgocDan.BACKEND.service.kafka.InteractionKafkaProducer;
+import com.NgocDan.BACKEND.service.kafka.PostDeletedKafkaProducer;
 import com.NgocDan.BACKEND.service.redis.InteractionRedisService;
 import com.NgocDan.BACKEND.service.redis.PostRedisService;
 
@@ -34,7 +35,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
@@ -224,26 +224,27 @@ public class PostService {
                 .orElseThrow(() -> new AppException(ErrorCode.WARD_NOT_FOUND));
 
         // up ảnh lên Cloudinary
-        String thumbnailUrl = cloudinaryService.uploadFile(thumbnailFile,"posts");
+        String thumbnailUrl = cloudinaryService.uploadFile(thumbnailFile, "posts");
         List<String> uploadedGalleryUrls = imageFiles.parallelStream()
-                .map(file -> cloudinaryService.uploadFile(file,"posts"))
+                .map(file -> cloudinaryService.uploadFile(file, "posts"))
                 .toList();
         // map và lưu bài đăng
-         Post post = postMapper.toPost(request);
+        Post post = postMapper.toPost(request);
         post.setUser(user);
         post.setWard(ward);
         post.setThumbnailUrl(thumbnailUrl);
         post.setStatus(PostStatus.PENDING);
 
-        if(!uploadedGalleryUrls.isEmpty()) {
+        if (!uploadedGalleryUrls.isEmpty()) {
             List<PostImage> postImages = uploadedGalleryUrls.stream()
                     .map(url -> PostImage.builder().imageUrl(url).post(post).build())
                     .toList();
             post.setImages(postImages);
         }
 
+        log.info("////////////////////////////////////////////////////////////");
+        log.info("kinh do{}, vi do{}", post.getLongitude(), post.getLatitude());
         Post savePost = postRepository.save(post);
-
         // ghi lại transaction đăng tin
         Transaction transaction = Transaction.builder()
                 .user(user)
@@ -298,15 +299,17 @@ public class PostService {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
 
-        // xoá bài đăng
-        post.setStatus(PostStatus.DELETED);
-        postRepository.save(post);
         // gửi event xóa vector nếu bài đang APPROVED
         if (post.getStatus() == PostStatus.APPROVED) {
             postDeletedKafkaProducer.publishPostDeleted(
-                    PostDeletedEvent.builder().postId(postId).build()
-            );
+                    PostDeletedEvent.builder().postId(postId).build());
+            log.info("da gui event xoa vector cho bai: {}", post.getTitle());
         }
+
+        // xoá bài đăng
+        post.setStatus(PostStatus.DELETED);
+        postRepository.save(post);
+
         log.info("User {} da xoa bai: {}", userId, post.getTitle());
     }
 
@@ -342,8 +345,7 @@ public class PostService {
         Long currentUserId = Long.parseLong(sub);
 
         // 2. Tìm bài đăng, fetch thêm ảnh để tránh LazyInitializationException
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND));
+        Post post = postRepository.findById(postId).orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND));
 
         // 3. Bảo mật: Chỉ chủ nhân hoặc Admin mới được lấy dữ liệu để sửa
         if (!post.getUser().getId().equals(currentUserId)) {
@@ -355,14 +357,18 @@ public class PostService {
 
     // update post
     @Transactional
-    public void updatePost(Long postId, PostUpdateRequest request, MultipartFile thumbnailFile, List<MultipartFile> imageFiles, List<String> imageUrls){
+    public void updatePost(
+            Long postId,
+            PostUpdateRequest request,
+            MultipartFile thumbnailFile,
+            List<MultipartFile> imageFiles,
+            List<String> imageUrls) {
         // lấy ID người dùng hiện tại từ Security Context
         String sub = SecurityContextHolder.getContext().getAuthentication().getName();
         Long currentUserId = Long.parseLong(sub);
 
         // tìm bài đăng
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND));
+        Post post = postRepository.findById(postId).orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND));
 
         // kiểm tra quyền: Chỉ chủ nhân mới được sửa
         if (!post.getUser().getId().equals(currentUserId)) {
@@ -370,12 +376,13 @@ public class PostService {
         }
 
         // tìm Ward
-        Ward ward = wardRepository.findById(request.getWardId())
+        Ward ward = wardRepository
+                .findById(request.getWardId())
                 .orElseThrow(() -> new AppException(ErrorCode.WARD_NOT_FOUND));
 
         // xử lý thumbnail
-        if(thumbnailFile != null && !thumbnailFile.isEmpty()){
-            if(post.getThumbnailUrl() != null){
+        if (thumbnailFile != null && !thumbnailFile.isEmpty()) {
+            if (post.getThumbnailUrl() != null) {
                 cloudinaryService.deleteFileByUrl(post.getThumbnailUrl());
                 log.info("da xoa thumbnail cu cho bai: {}", post.getTitle());
             }
@@ -399,8 +406,7 @@ public class PostService {
 
         // Giữ lại các URL cũ user không xóa
         keepUrls.forEach(url ->
-                finalImages.add(PostImage.builder().imageUrl(url).post(post).build())
-        );
+                finalImages.add(PostImage.builder().imageUrl(url).post(post).build()));
 
         // Upload và thêm ảnh mới
         if (imageFiles != null && !imageFiles.isEmpty()) {
@@ -408,8 +414,7 @@ public class PostService {
                     .map(file -> cloudinaryService.uploadFile(file, "posts"))
                     .toList();
             newImageUrls.forEach(url ->
-                    finalImages.add(PostImage.builder().imageUrl(url).post(post).build())
-            );
+                    finalImages.add(PostImage.builder().imageUrl(url).post(post).build()));
         }
 
         post.getImages().addAll(finalImages);
@@ -423,5 +428,8 @@ public class PostService {
 
         postRepository.save(post);
         log.info("User {} da cap nhat bai dang: {}", currentUserId, post.getTitle());
+
+        postDeletedKafkaProducer.publishPostDeleted(
+                PostDeletedEvent.builder().postId(postId).build());
     }
 }

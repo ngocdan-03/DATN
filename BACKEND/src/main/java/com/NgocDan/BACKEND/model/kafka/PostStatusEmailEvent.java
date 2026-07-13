@@ -1,6 +1,7 @@
 package com.NgocDan.BACKEND.model.kafka;
 
 import com.NgocDan.BACKEND.enums.PostStatus;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 

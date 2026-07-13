@@ -3,16 +3,16 @@ package com.NgocDan.BACKEND.mapper;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+
 import com.NgocDan.BACKEND.dto.request.NewsRequest;
 import com.NgocDan.BACKEND.dto.response.AdminNewsDetailResponse;
 import com.NgocDan.BACKEND.dto.response.AdminNewsResponse;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-
 import com.NgocDan.BACKEND.dto.response.NewsDetailResponse;
 import com.NgocDan.BACKEND.dto.response.NewsResponse;
 import com.NgocDan.BACKEND.model.News;
-import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface NewsMapper {

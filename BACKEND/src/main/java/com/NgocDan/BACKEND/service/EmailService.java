@@ -1,7 +1,5 @@
 package com.NgocDan.BACKEND.service;
 
-import com.NgocDan.BACKEND.enums.PostStatus;
-import com.NgocDan.BACKEND.model.kafka.PostStatusEmailEvent;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
@@ -9,8 +7,10 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import com.NgocDan.BACKEND.enums.PostStatus;
 import com.NgocDan.BACKEND.exception.AppException;
 import com.NgocDan.BACKEND.exception.ErrorCode;
+import com.NgocDan.BACKEND.model.kafka.PostStatusEmailEvent;
 import com.NgocDan.BACKEND.model.redis.OtpEmail;
 
 import lombok.AccessLevel;
@@ -25,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 public class EmailService {
     JavaMailSender mailSender;
 
-    //-----------cho auth ---------------
+    // -----------cho auth ---------------
     public void sendOtpEmail(OtpEmail otpEmail) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
@@ -48,7 +48,7 @@ public class EmailService {
         }
     }
 
-    //-----------cho admin khi xử lý post ---------------
+    // -----------cho admin khi xử lý post ---------------
     public void sendPostStatusEmail(PostStatusEmailEvent event) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
@@ -63,9 +63,9 @@ public class EmailService {
             mailSender.send(message);
 
             log.info("Email trang thai bai dang da duoc gui toi: {}", event.getEmail());
-        }catch (MessagingException e) {
+        } catch (MessagingException e) {
             log.error("Lỗi khi gửi email trạng thái bài đăng tới {}: {}", event.getEmail(), e.getMessage());
-             throw new AppException(ErrorCode.EMAIL_SEND_FAILED);
+            throw new AppException(ErrorCode.EMAIL_SEND_FAILED);
         }
     }
 
@@ -92,7 +92,8 @@ public class EmailService {
         if (event.getPostStatus() == PostStatus.APPROVED) {
             statusMessage = "Bài đăng của bạn đã được quản trị viên duyệt và hiện đã được hiển thị trên hệ thống.";
         } else if (event.getPostStatus() == PostStatus.REJECTED) {
-            statusMessage = "Bài đăng của bạn đã bị quản trị viên từ chối. Vui lòng kiểm tra và chỉnh sửa lại thông tin bài đăng nếu cần.";
+            statusMessage =
+                    "Bài đăng của bạn đã bị quản trị viên từ chối. Vui lòng kiểm tra và chỉnh sửa lại thông tin bài đăng nếu cần.";
         } else if (event.getPostStatus() == PostStatus.DELETED) {
             statusMessage = "Bài đăng của bạn đã bị quản trị viên xóa khỏi hệ thống.";
         } else {
