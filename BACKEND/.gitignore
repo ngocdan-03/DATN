@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Bảo mật - KHÔNG commit lên Git ###
+.env
+kafka-certs/
+*.jks
+*.p12

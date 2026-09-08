@@ -25,7 +25,7 @@ public class GlobalExceptionHandler {
 
     private static final String MIN_ATTRIBUTE = "min";
 
-    // 1. Lỗi không xác định (Hệ thống)
+    //  Lỗi không xác định (Hệ thống)
     @ExceptionHandler(value = Exception.class)
     ResponseEntity<ApiResponse<?>> handlingException(Exception exception) {
         log.error("Hệ thống có lỗi chưa xác định: ", exception);
@@ -36,7 +36,7 @@ public class GlobalExceptionHandler {
                         .build());
     }
 
-    // 2. Lỗi Business Logic
+    //  Lỗi Business Logic
     @ExceptionHandler(value = AppException.class)
     ResponseEntity<ApiResponse<?>> handlingAppException(AppException exception) {
         ErrorCode errorCode = exception.getErrorCode();
@@ -47,7 +47,7 @@ public class GlobalExceptionHandler {
                         .build());
     }
 
-    // 3. Lỗi Phân quyền (Access Denied)
+    //  Lỗi Phân quyền (Access Denied)
     @ExceptionHandler(value = AccessDeniedException.class)
     ResponseEntity<ApiResponse<?>> handlingAccessDeniedException(AccessDeniedException exception) {
         ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
@@ -58,7 +58,7 @@ public class GlobalExceptionHandler {
                         .build());
     }
 
-    // 4. Lỗi Validation cho DTO (@RequestBody @Valid)
+    //  Lỗi Validation cho DTO (@RequestBody @Valid)
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     ResponseEntity<ApiResponse<?>> handlingValidation(MethodArgumentNotValidException exception) {
         // 1. Kiểm tra Field Error trước, nếu không có thì lấy Global Error
@@ -97,7 +97,7 @@ public class GlobalExceptionHandler {
                         .build());
     }
 
-    // 5. Lỗi Validation cho Param/PathVariable (@Validated trên Class)
+    //  Lỗi Validation cho Param/PathVariable (@Validated trên Class)
     @ExceptionHandler(value = ConstraintViolationException.class)
     ResponseEntity<ApiResponse<?>> handlingConstraintViolationException(ConstraintViolationException exception) {
         // Lấy message lỗi đầu tiên
@@ -117,7 +117,7 @@ public class GlobalExceptionHandler {
                         .build());
     }
 
-    // 6. Lỗi format dữ liệu đầu vào (Ví dụ: JSON parse lỗi, LocalDate format sai...)
+    //  Lỗi format dữ liệu đầu vào (Ví dụ: JSON parse lỗi, LocalDate format sai...)
     @ExceptionHandler(value = HttpMessageNotReadableException.class)
     ResponseEntity<ApiResponse<?>> handlingHttpMessageNotReadableException(HttpMessageNotReadableException exception) {
 
