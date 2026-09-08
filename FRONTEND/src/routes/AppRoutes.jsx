@@ -22,7 +22,7 @@ import VerifyAccount from '../pages/auth/VerifyAccount';
 import ForgotPassword from '../pages/auth/ForgotPassword';
 import ResetPassword from '../pages/auth/ResetPassword';
 
-import UserDashBoard from '../pages/user/DashBoard';
+import UserDashBoard from '../pages/user/Dashboard';
 import Posts from '../pages/user/Posts';
 import Finance from '../pages/user/Finance';
 import Engagement from '../pages/user/Engagement';
@@ -32,7 +32,7 @@ import PaymentResult from '../pages/user/PaymentResult';
 import PostCreate from '../pages/user/PostCreate';
 import PostEdit from '../pages/user/PostEdit';
 
-import AdminDashBoard from '../pages/admin/DashBoard';
+import AdminDashBoard from '../pages/admin/Dashboard';
 import AdminPosts from '../pages/admin/Posts';
 import AdminUsers from '../pages/admin/Users';
 import AdminNews from '../pages/admin/News';
@@ -45,14 +45,14 @@ import Unauthorized from '../pages/Unauthorized';
 import { useAuth } from "../contexts/AuthContext";
 
 function IndexRedirect() {
-  const { isAuthenticated, user } = useAuth();
-  const roles = user?.roles || [];
+    const { isAuthenticated, user } = useAuth();
+    const roles = user?.roles || [];
 
-  if (isAuthenticated && roles.includes("ADMIN")) {
-    return <Navigate to="/admin/dashboard" replace />;
-  }
+    if (isAuthenticated && roles.includes("ADMIN")) {
+        return <Navigate to="/admin/dashboard" replace />;
+    }
 
-  return <Home />;
+    return <Home />;
 }
 
 export default function AppRoutes() {
@@ -81,7 +81,7 @@ export default function AppRoutes() {
                         <Route path="reset-password" element={<ResetPassword />} />
                     </Route>
                 </Route>
-                
+
 
                 {/* protected routes cho user layout và user co role USER */}
                 <Route element={<ProtectedRoute allowedRoles={['USER']} />}>
@@ -89,9 +89,9 @@ export default function AppRoutes() {
                         <Route element={<UserLayout />}>
                             <Route path="user/dashboard" element={<UserDashBoard />} />
                             <Route path="user/posts" element={<Posts />} />
-                             <Route path="user/finance" element={<Finance />} />
-                             <Route path="user/engagement" element={<Engagement />} />
-                             <Route path="user/settings" element={<Setting />} />
+                            <Route path="user/finance" element={<Finance />} />
+                            <Route path="user/engagement" element={<Engagement />} />
+                            <Route path="user/settings" element={<Setting />} />
                         </Route>
                         <Route path="user/payment" element={<Payment />} />
                         <Route path="user/payment-result" element={<PaymentResult />} />

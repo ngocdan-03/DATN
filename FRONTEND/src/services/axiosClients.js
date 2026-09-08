@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const baseUrl = "http://localhost:8080/real-estate";
+const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:8080/real-estate";
 
 // dùng cho api public
 export const publicClient = axios.create({
