@@ -1,8 +1,7 @@
 from kafka import KafkaConsumer
 from app.schemas.models import InteractionEvent
 from app.services.user_vector_service import recalculate_user_vector
-from app.config import settings
-import json
+from app.consumers.kafka_utils import get_kafka_common_kwargs  # ===== THÊM MỚI =====
 import threading
 import logging
 
@@ -30,11 +29,7 @@ def handle_interaction(data: dict):
 def start_interaction_consumer():
     consumer = KafkaConsumer(
         "user_interaction_topic",
-        bootstrap_servers=settings.KAFKA_BOOTSTRAP_SERVERS,
-        group_id=settings.KAFKA_GROUP_ID,
-        auto_offset_reset="earliest",
-        enable_auto_commit=True,
-        value_deserializer=lambda m: json.loads(m.decode("utf-8"))
+        **get_kafka_common_kwargs()  # ===== SỬA: dùng config dùng chung, có SASL_SSL =====
     )
     logger.info("[InteractionConsumer] Listening on user_interaction_topic...")
     for message in consumer:

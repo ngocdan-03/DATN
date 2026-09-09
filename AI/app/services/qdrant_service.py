@@ -15,11 +15,12 @@ _client = None
 def get_client() -> QdrantClient:
     global _client
     if _client is None:
+        # ===== SỬA: dùng url + api_key để tương thích Qdrant Cloud =====
         _client = QdrantClient(
-            host=settings.QDRANT_HOST,
-            port=settings.QDRANT_PORT
+            url=settings.QDRANT_URL,
+            api_key=settings.QDRANT_API_KEY if settings.QDRANT_API_KEY else None
         )
-        logger.info(f"Connected to Qdrant at {settings.QDRANT_HOST}:{settings.QDRANT_PORT}")
+        logger.info(f"Connected to Qdrant at {settings.QDRANT_URL}")
     return _client
 
 def init_collections():

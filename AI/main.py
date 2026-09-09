@@ -1,12 +1,13 @@
-from fastapi import FastAPI
-from contextlib import asynccontextmanager
-from app.routers import recommend
-from app.routers import chatbot
-from app.services.qdrant_service import init_collections
-from app.consumers.post_consumer import start_post_consumers
-from app.consumers.interaction_consumer import start_interaction_consumers
 import logging
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from app.consumers.interaction_consumer import start_interaction_consumers
+from app.consumers.post_consumer import start_post_consumers
+from app.routers import chatbot, recommend
+from app.services.encoder_service import get_model  
+from app.services.qdrant_service import init_collections
 
 logging.basicConfig(
     level=logging.INFO,
@@ -19,10 +20,15 @@ async def lifespan(app: FastAPI):
     # ── Startup ──
     logger.info("Starting AI server...")
 
-    # 1. Tạo Qdrant collections nếu chưa có
+    # 1. Khởi tạo và nạp sẵn mô hình SentenceTransformer vào RAM (Warm-up)
+    logger.info("Pre-loading Embedding Model into memory...")
+    get_model()  # Gọi get_model() để nạp biến _model
+    logger.info("Embedding Model ready in RAM.")
+
+    # 2. Tạo Qdrant collections nếu chưa có
     init_collections()
 
-    # 2. Khởi động Kafka consumers trong background thread
+    # 3. Khởi động Kafka consumers sau khi model đã nằm sẵn trong RAM
     start_post_consumers()
     start_interaction_consumers()
 
@@ -49,6 +55,7 @@ app.add_middleware(
 
 app.include_router(recommend.router)
 app.include_router(chatbot.router)
+
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}

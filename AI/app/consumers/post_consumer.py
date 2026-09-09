@@ -2,8 +2,7 @@ from kafka import KafkaConsumer
 from app.schemas.models import PostApprovedEvent, PostDeletedEvent
 from app.services.encoder_service import encode_post
 from app.services.qdrant_service import upsert_post_vector, delete_post_vector
-from app.config import settings
-import json
+from app.consumers.kafka_utils import get_kafka_common_kwargs  # ===== THÊM MỚI =====
 import threading
 import logging
 
@@ -55,11 +54,7 @@ def handle_post_deleted(data: dict):
 def start_post_approved_consumer():
     consumer = KafkaConsumer(
         "post_approved_topic",
-        bootstrap_servers=settings.KAFKA_BOOTSTRAP_SERVERS,
-        group_id=settings.KAFKA_GROUP_ID,
-        auto_offset_reset="earliest",
-        enable_auto_commit=True,
-        value_deserializer=lambda m: json.loads(m.decode("utf-8"))
+        **get_kafka_common_kwargs()  # ===== SỬA =====
     )
     logger.info("[PostConsumer] Listening on post_approved_topic...")
     for message in consumer:
@@ -68,18 +63,13 @@ def start_post_approved_consumer():
 def start_post_deleted_consumer():
     consumer = KafkaConsumer(
         "post_deleted_topic",
-        bootstrap_servers=settings.KAFKA_BOOTSTRAP_SERVERS,
-        group_id=settings.KAFKA_GROUP_ID,
-        auto_offset_reset="earliest",
-        enable_auto_commit=True,
-        value_deserializer=lambda m: json.loads(m.decode("utf-8"))
+        **get_kafka_common_kwargs()  # ===== SỬA =====
     )
     logger.info("[PostConsumer] Listening on post_deleted_topic...")
     for message in consumer:
         handle_post_deleted(message.value)
 
 def start_post_consumers():
-    """Chạy 2 consumer trong thread riêng để không block main thread"""
     t1 = threading.Thread(target=start_post_approved_consumer, daemon=True)
     t2 = threading.Thread(target=start_post_deleted_consumer, daemon=True)
     t1.start()
