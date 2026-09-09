@@ -1,12 +1,12 @@
-import google.generativeai as genai
+import httpx
 from app.config import settings
 import logging
 
 logger = logging.getLogger(__name__)
 
-genai.configure(api_key=settings.GEMINI_API_KEY)
+GEMINI_CHAT_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
+GEMINI_COUNT_TOKENS_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:countTokens"
 
-# System prompt định hướng Chatbot chuyên gia pháp lý cho RecoLand
 SYSTEM_PROMPT = """
 Bạn là Trợ lý ảo chuyên trách Pháp lý Bất động sản của website RecoLand.
 
@@ -20,58 +20,54 @@ Nguyên tắc hoạt động nghiêm ngặt:
 - Câu trả lời cần ngắn gọn, chia bố cục rõ ràng, dễ hiểu đối với người dân đại chúng và bắt buộc bằng tiếng Việt.
 """
 
-_model = None
+def _to_gemini_contents(history: list[dict] | None, message: str) -> list[dict]:
+    contents = []
+    if history:
+        for h in history:
+            contents.append({"role": h["role"], "parts": [{"text": h["text"]}]})
+    contents.append({"role": "user", "parts": [{"text": message}]})
+    return contents
 
-def get_model():
-    global _model
-    if _model is None:
-        _model = genai.GenerativeModel(
-            model_name="gemini-2.5-flash",
-            system_instruction=SYSTEM_PROMPT
-        )
-    return _model
-
-def count_tokens_from_input(content: str | list) -> int:
-    """
-    Hàm tính toán chính xác số token của một chuỗi văn bản hoặc một mảng lịch sử chat.
-    """
-    model = get_model()
+def count_tokens_from_input(contents: list[dict]) -> int:
     try:
-        # Gọi hàm count_tokens có sẵn từ SDK Google để băm thử dữ liệu
-        response = model.count_tokens(content)
-        return response.total_tokens
+        response = httpx.post(
+            GEMINI_COUNT_TOKENS_URL,
+            params={"key": settings.GEMINI_API_KEY},
+            json={"contents": contents},
+            timeout=10.0
+        )
+        response.raise_for_status()
+        return response.json().get("totalTokens", 0)
     except Exception as e:
         logger.error(f"[Chatbot] Đếm token thất bại: {e}")
         return 0
 
 def chat(message: str, history: list[dict] | None = None) -> str:
-    model = get_model()
+    contents = _to_gemini_contents(history, message)
 
-    # Convert history sang format Gemini
-    gemini_history = []
+    current_tokens = count_tokens_from_input([{"role": "user", "parts": [{"text": message}]}])
+    logger.info(f"[Chatbot] Số token của message hiện tại: {current_tokens}")
+
     if history:
-        for h in history:
-            gemini_history.append({
-                "role": h["role"],  # "user" hoặc "model"
-                "parts": [h["text"]]
-            })
-
-    # đếm token của message
-    current_message_tokens = count_tokens_from_input(message)
-    logger.info(f"[Chatbot] Số token của message hiện tại: {current_message_tokens}")
-
-    # đếm token của lịch sử chat
-    if gemini_history:
-        total_history_tokens = count_tokens_from_input(gemini_history)
+        history_contents = [{"role": h["role"], "parts": [{"text": h["text"]}]} for h in history]
+        total_history_tokens = count_tokens_from_input(history_contents)
         logger.info(f"[Chatbot] Số token của lịch sử chat: {total_history_tokens}")
         if total_history_tokens > 8000:
-            logger.info(f"[Chatbot] Lịch sử chat tiêu tốn: {total_history_tokens} token, vượt quá giới hạn 8000 token. Cần cắt bớt lịch sử.")
-
-    chat_session = model.start_chat(history=gemini_history)
+            logger.info(f"[Chatbot] Lịch sử chat tiêu tốn: {total_history_tokens} token, vượt quá giới hạn 8000. Cần cắt bớt lịch sử.")
 
     try:
-        response = chat_session.send_message(message)
-        return response.text
+        response = httpx.post(
+            GEMINI_CHAT_URL,
+            params={"key": settings.GEMINI_API_KEY},
+            json={
+                "systemInstruction": {"parts": [{"text": SYSTEM_PROMPT}]},
+                "contents": contents
+            },
+            timeout=30.0
+        )
+        response.raise_for_status()
+        data = response.json()
+        return data["candidates"][0]["content"]["parts"][0]["text"]
     except Exception as e:
         logger.error(f"[Chatbot] Gemini error: {e}")
         raise
