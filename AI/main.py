@@ -25,7 +25,11 @@ async def lifespan(app: FastAPI):
     get_model()
 
     # 2. Tạo Qdrant collections nếu chưa có
-    init_collections()
+    try:
+        init_collections()
+    except Exception as e:
+        logger.warning(f"Could not connect to Qdrant at startup: {e}")
+        logger.warning("Server will continue — Qdrant operations will retry on first use")
 
     # 3. Khởi động Kafka consumers sau khi model đã nằm sẵn trong RAM
     start_post_consumers()
