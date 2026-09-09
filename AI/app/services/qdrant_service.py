@@ -15,14 +15,17 @@ _client = None
 def get_client() -> QdrantClient:
     global _client
     if _client is None:
-        # ===== SỬA: dùng url + api_key để tương thích Qdrant Cloud =====
+        # Dùng port 443 (HTTPS chuẩn) thay vì 6333 vì Render free chặn port 6333
+        qdrant_url = settings.QDRANT_URL.replace("https://", "").replace("http://", "").rstrip("/")
         _client = QdrantClient(
-            url=settings.QDRANT_URL,
+            host=qdrant_url,
+            port=443,
+            https=True,
             api_key=settings.QDRANT_API_KEY if settings.QDRANT_API_KEY else None,
             prefer_grpc=False,
             timeout=30,
         )
-        logger.info(f"Connected to Qdrant at {settings.QDRANT_URL}")
+        logger.info(f"Connected to Qdrant at {qdrant_url}:443")
     return _client
 
 def init_collections():
