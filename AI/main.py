@@ -20,10 +20,9 @@ async def lifespan(app: FastAPI):
     # ── Startup ──
     logger.info("Starting AI server...")
 
-    # 1. Khởi tạo và nạp sẵn mô hình SentenceTransformer vào RAM (Warm-up)
-    logger.info("Pre-loading Embedding Model into memory...")
-    get_model()  # Gọi get_model() để nạp biến _model
-    logger.info("Embedding Model ready in RAM.")
+    # 1. Gemini Embedding API — không cần nạp model vào RAM
+    logger.info("Using Gemini Embedding API — no local model to load")
+    get_model()
 
     # 2. Tạo Qdrant collections nếu chưa có
     init_collections()
