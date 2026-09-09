@@ -2,7 +2,7 @@ from qdrant_client import QdrantClient
 from qdrant_client.models import (
     Distance, VectorParams, PointStruct,
     Filter, FieldCondition, MatchValue,
-    UpdateStatus
+    UpdateStatus, PointIdsList
 )
 from app.config import settings
 import logging
@@ -71,7 +71,7 @@ def delete_post_vector(post_id: int):
     client = get_client()
     client.delete(
         collection_name=settings.POST_COLLECTION,
-        points_selector=[post_id]
+        points_selector=PointIdsList(points=[post_id])
     )
     logger.info(f"Deleted post vector: {post_id}")
 
