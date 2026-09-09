@@ -5,7 +5,7 @@ load_dotenv()
 
 class Settings:
     # ===== SỬA: Qdrant Cloud dùng URL + API Key thay vì host/port =====
-    QDRANT_URL: str = os.getenv("QDRANT_URL", "http://localhost:6333")
+    QDRANT_URL: str = os.getenv("QDRANT_URL", os.getenv("QDRANT_HOST", "http://localhost:6333"))
     QDRANT_API_KEY: str = os.getenv("QDRANT_API_KEY", "")
 
     KAFKA_BOOTSTRAP_SERVERS: str = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
