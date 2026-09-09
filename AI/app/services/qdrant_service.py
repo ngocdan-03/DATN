@@ -18,7 +18,9 @@ def get_client() -> QdrantClient:
         # ===== SỬA: dùng url + api_key để tương thích Qdrant Cloud =====
         _client = QdrantClient(
             url=settings.QDRANT_URL,
-            api_key=settings.QDRANT_API_KEY if settings.QDRANT_API_KEY else None
+            api_key=settings.QDRANT_API_KEY if settings.QDRANT_API_KEY else None,
+            prefer_grpc=False,
+            timeout=30,
         )
         logger.info(f"Connected to Qdrant at {settings.QDRANT_URL}")
     return _client
