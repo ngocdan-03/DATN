@@ -2,7 +2,7 @@ from qdrant_client import QdrantClient
 from qdrant_client.models import (
     Distance, VectorParams, PointStruct,
     Filter, FieldCondition, MatchValue,
-    UpdateStatus, PointIdsList
+    UpdateStatus, PointIdsList, PayloadSchemaType
 )
 from app.config import settings
 import logging
@@ -28,6 +28,23 @@ def get_client() -> QdrantClient:
         logger.info(f"Connected to Qdrant at {qdrant_url}:443")
     return _client
 
+def _ensure_payload_index(client, collection_name: str, field_name: str, schema_type: PayloadSchemaType):
+    """Tạo payload index nếu chưa tồn tại"""
+    try:
+        collection_info = client.get_collection(collection_name)
+        existing_indexes = collection_info.payload_schema or {}
+        if field_name not in existing_indexes:
+            client.create_payload_index(
+                collection_name=collection_name,
+                field_name=field_name,
+                field_schema=schema_type,
+            )
+            logger.info(f"Created payload index: {collection_name}.{field_name} ({schema_type})")
+        else:
+            logger.info(f"Payload index already exists: {collection_name}.{field_name}")
+    except Exception as e:
+        logger.warning(f"Failed to create payload index {collection_name}.{field_name}: {e}")
+
 def init_collections():
     """Tạo collection nếu chưa tồn tại khi khởi động"""
     client = get_client()
@@ -42,6 +59,10 @@ def init_collections():
             )
         )
         logger.info(f"Created collection: {settings.POST_COLLECTION}")
+
+    # Tạo payload index cho các field dùng trong filter
+    _ensure_payload_index(client, settings.POST_COLLECTION, "propertyType", PayloadSchemaType.KEYWORD)
+    _ensure_payload_index(client, settings.POST_COLLECTION, "listingType", PayloadSchemaType.KEYWORD)
 
     # Collection cho user preference vector
     if not client.collection_exists(settings.USER_COLLECTION):
