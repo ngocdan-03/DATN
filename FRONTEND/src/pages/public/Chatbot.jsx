@@ -115,7 +115,7 @@ export default function Chatbot() {
           text: m.content
         }));
 
-      const response = await axios.post('http://localhost:8000/api/chatbot/chat', {
+      const response = await axios.post('https://recoland-ai.onrender.com/api/chatbot/chat', {
         message: messageText,
         history
       });
