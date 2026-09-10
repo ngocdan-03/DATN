@@ -110,13 +110,13 @@ def search_similar_posts(post_id: int, limit: int = 6) -> list[int]:
     )
 
     # Tìm top-K bài tương tự, loại bài hiện tại ra
-    similar = client.search(
+    similar = client.query_points(
         collection_name=settings.POST_COLLECTION,
-        query_vector=post_vector,
+        query=post_vector,
         query_filter=query_filter,
         limit=limit + 1,  # +1 vì sẽ exclude bài hiện tại
         score_threshold=0.5  # chỉ lấy bài có độ tương đồng > 50%
-    )
+    ).points
 
     return [
         int(hit.id)
@@ -156,10 +156,10 @@ def get_user_vector(user_id: int) -> list[float] | None:
 def search_posts_by_vector(vector: list[float], limit: int = 6) -> list[int]:
     """Tìm bài đăng phù hợp với user vector"""
     client = get_client()
-    results = client.search(
+    results = client.query_points(
         collection_name=settings.POST_COLLECTION,
-        query_vector=vector,
+        query=vector,
         limit=limit,
         score_threshold=0.4
-    )
+    ).points
     return [int(hit.id) for hit in results]
