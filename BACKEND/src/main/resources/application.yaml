@@ -58,4 +58,4 @@ jwt:
   refresh-duration: 604800 #second 1 tuan
 ai:
   server:
-    url: https://recoland-ai.onrender.com
+    url: ${AI_SERVER_URL:https://recoland-ai.onrender.com}
