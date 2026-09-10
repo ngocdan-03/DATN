@@ -38,6 +38,7 @@ def recalculate_user_vector(
     weight = INTERACTION_WEIGHTS.get(interaction_type, 1)
 
     current_vector = get_user_vector(user_id)
+    alpha = BASE_LEARNING_RATE * (weight / MAX_WEIGHT)
 
     if current_vector is None:
         if action == "ADD":
@@ -46,8 +47,6 @@ def recalculate_user_vector(
             return
     else:
         current = np.array(current_vector)
-
-        alpha = BASE_LEARNING_RATE * (weight / MAX_WEIGHT)
 
         if action == "ADD":
             new_vector = (1 - alpha) * current + alpha * post_vector

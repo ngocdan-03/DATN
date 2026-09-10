@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 GEMINI_EMBED_URL = (
     "https://generativelanguage.googleapis.com/v1beta/"
-    "models/text-embedding-004:embedContent"
+    "models/gemini-embedding-001:embedContent"
 )
 
 def _normalize(vector) -> list[float]:
@@ -23,7 +23,7 @@ def _call_gemini_embed(text: str, task_type: str = "RETRIEVAL_DOCUMENT") -> list
         GEMINI_EMBED_URL,
         params={"key": settings.GEMINI_API_KEY},
         json={
-            "model": "models/text-embedding-004",
+            "model": "models/gemini-embedding-001",
             "content": {
                 "parts": [{"text": text}]
             },
@@ -38,7 +38,7 @@ def _call_gemini_embed(text: str, task_type: str = "RETRIEVAL_DOCUMENT") -> list
 
 def get_model():
     """Không cần load model nữa — dùng Gemini API"""
-    logger.info("Using Gemini Embedding API (text-embedding-004) — no local model needed")
+    logger.info("Using Gemini Embedding API (gemini-embedding-001) — no local model needed")
 
 def encode_post(post: dict) -> list[float]:
     """Encode bài đăng thành vector 384 chiều qua Gemini API"""
