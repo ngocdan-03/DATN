@@ -60,3 +60,7 @@ jwt:
 ai:
   server:
     url: ${AI_SERVER_URL:https://recoland-ai.onrender.com}
+brevo:
+  api-key: ${BREVO_API_KEY}
+  sender-name: "RecoLand"
+  sender-email: "buingocdan2003@gmail.com"
