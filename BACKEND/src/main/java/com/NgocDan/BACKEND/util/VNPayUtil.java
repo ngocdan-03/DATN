@@ -23,7 +23,19 @@ public class VNPayUtil {
 
     public static String getIpAddress(HttpServletRequest request) {
         String ipAddress = request.getHeader("X-FORWARDED-FOR");
-        if (ipAddress == null) ipAddress = request.getRemoteAddr();
+        if (ipAddress == null || ipAddress.isEmpty()) {
+            ipAddress = request.getRemoteAddr();
+        }
+
+        // Nếu có nhiều IP do đi qua Proxy/Cloudflare, lấy IP client đầu tiên
+        if (ipAddress != null && ipAddress.contains(",")) {
+            ipAddress = ipAddress.split(",")[0].trim();
+        }
+
+        // Xử lý nếu dính IPv6 (::1 hoặc 0:0:0:0:0:0:0:1) trên local hoặc giá trị null
+        if (ipAddress == null || "0:0:0:0:0:0:0:1".equals(ipAddress) || "::1".equals(ipAddress)) {
+            ipAddress = "127.0.0.1";
+        }
         return ipAddress;
     }
 

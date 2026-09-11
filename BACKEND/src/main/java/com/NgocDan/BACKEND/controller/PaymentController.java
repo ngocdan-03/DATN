@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +22,7 @@ import com.NgocDan.BACKEND.service.VNPayService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 
 @RestController
 @RequestMapping("/payment")
@@ -28,6 +30,11 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PaymentController {
     VNPayService vnPayService;
+
+    // Tiêm URL chuyển hướng kết quả Frontend linh hoạt (Local -> localhost:5173, Render -> Vercel)
+    @Value("${vnpay.frontend-redirect-url:http://localhost:5173/user/payment-result}")
+    @NonFinal
+    String frontendRedirectUrl;
 
     // Endpoint để tạo URL thanh toán với VNPay
     @PostMapping("/create-vnpay-url")
@@ -47,15 +54,18 @@ public class PaymentController {
             throws IOException {
         PaymentCallbackResponse result = vnPayService.processCallback(queryParams);
 
-        // Điều hướng
+        // Điều hướng động theo cấu hình (tránh bị văng về localhost khi chạy trên Vercel)
         String redirectUrl = String.format(
-                "http://localhost:5173/user/payment-result?status=%s&amount=%s&message=%s",
-                result.getStatus(), result.getAmount(), URLEncoder.encode(result.getMessage(), StandardCharsets.UTF_8));
+                "%s?status=%s&amount=%s&message=%s",
+                frontendRedirectUrl,
+                result.getStatus(),
+                result.getAmount(),
+                URLEncoder.encode(result.getMessage(), StandardCharsets.UTF_8));
 
         response.sendRedirect(redirectUrl);
     }
 
-    // Endpoint để ipn tuuwf vnpay (gọi ngầm )
+    // Endpoint để ipn từ vnpay (gọi ngầm server-to-server)
     @GetMapping("/vnpay-ipn")
     public Map<String, String> paymentIpn(@RequestParam Map<String, String> queryParams) {
         return vnPayService.processIPN(queryParams);
