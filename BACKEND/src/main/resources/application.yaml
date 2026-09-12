@@ -60,7 +60,7 @@ jwt:
   refresh-duration: 604800 #second 1 tuan
 ai:
   server:
-    url: ${AI_SERVER_URL:https://recoland-ai.onrender.com}
+    url: ${AI_SERVER_URL:https://recoland-ai-38r7.onrender.com}
 brevo:
   api-key: ${BREVO_API_KEY}
   sender-name: "RecoLand"

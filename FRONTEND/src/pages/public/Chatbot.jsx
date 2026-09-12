@@ -13,11 +13,10 @@ function TopicChip({ label, icon, desc, onClick, disabled }) {
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`w-full text-left p-4 rounded-2xl border transition-all duration-200 group ${
-        disabled
+      className={`w-full text-left p-4 rounded-2xl border transition-all duration-200 group ${disabled
           ? 'border-slate-100 bg-slate-50 cursor-not-allowed opacity-60'
           : 'border-slate-200 bg-white hover:border-[#cca830]/50 hover:bg-[#cca830]/5 hover:shadow-sm cursor-pointer active:scale-[0.98]'
-      }`}
+        }`}
     >
       <div className="flex items-start gap-3">
         <span className="text-lg mt-0.5 flex-none">{icon}</span>
@@ -115,7 +114,7 @@ export default function Chatbot() {
           text: m.content
         }));
 
-      const response = await axios.post('https://recoland-ai.onrender.com/api/chatbot/chat', {
+      const response = await axios.post('https://recoland-ai-38r7.onrender.com/api/chatbot/chat', {
         message: messageText,
         history
       });
@@ -209,11 +208,10 @@ export default function Chatbot() {
                   )}
 
                   <div className="flex flex-col gap-1 max-w-[78%]">
-                    <div className={`px-4 py-3 text-sm leading-relaxed whitespace-pre-line shadow-sm ${
-                      msg.role === 'user'
+                    <div className={`px-4 py-3 text-sm leading-relaxed whitespace-pre-line shadow-sm ${msg.role === 'user'
                         ? 'bg-[#041627] text-white rounded-2xl rounded-tr-sm'
                         : 'bg-slate-50 border border-slate-200/80 text-slate-700 rounded-2xl rounded-tl-sm'
-                    }`}>
+                      }`}>
                       {msg.content}
                     </div>
                     <p className={`text-[10px] font-medium text-slate-400 ${msg.role === 'user' ? 'text-right' : 'text-left pl-1'}`}>
@@ -248,9 +246,8 @@ export default function Chatbot() {
 
             {/* Input bar */}
             <div className="px-4 py-4 bg-white border-t border-slate-100">
-              <div className={`flex gap-2 bg-slate-100 rounded-2xl px-2 py-2 transition-all duration-200 ${
-                isLoading ? 'opacity-70' : 'focus-within:ring-2 focus-within:ring-[#041627]/15 focus-within:bg-slate-50'
-              }`}>
+              <div className={`flex gap-2 bg-slate-100 rounded-2xl px-2 py-2 transition-all duration-200 ${isLoading ? 'opacity-70' : 'focus-within:ring-2 focus-within:ring-[#041627]/15 focus-within:bg-slate-50'
+                }`}>
                 <input
                   ref={inputRef}
                   type="text"
@@ -264,11 +261,10 @@ export default function Chatbot() {
                 <button
                   onClick={() => handleSendMessage()}
                   disabled={isLoading || !input.trim()}
-                  className={`flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-200 flex-none ${
-                    isLoading || !input.trim()
+                  className={`flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-200 flex-none ${isLoading || !input.trim()
                       ? 'bg-slate-300 text-white cursor-not-allowed'
                       : 'bg-[#041627] text-white hover:bg-[#cca830] active:scale-90'
-                  }`}
+                    }`}
                 >
                   <svg className="w-4 h-4 rotate-90" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
